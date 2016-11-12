@@ -173,7 +173,7 @@ def get_colors(column_name, n):
 
     return colors
 
-def plot(summary, currency=None):
+def plot(summary, currency=None, width=600, height=400):
     """
     Plot the given transaction summary (output of :func:`summarize`) using Python HighCharts.
     Include the given currency units (string; e.g. 'NZD') in the plot labels.
@@ -188,8 +188,8 @@ def plot(summary, currency=None):
     
     options = {
         'chart': {
-            'width': 600,
-            'height': 400,
+            'width': width,
+            'height': height,
         },
         'title': {
             'text': 'Account Summary'
