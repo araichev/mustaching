@@ -1,5 +1,10 @@
 Budgeting
 ***********
+
+.. image:: http://mybinder.org/badge.svg 
+    :target: http://mybinder.org:/repo/araichev/budgeting
+
+
 Some Python 3.4+ code for slicing, dicing, and plotting a CSV of personal finance data.
 Uses Pandas and Python-Highcharts to do most of the work.
 
@@ -7,7 +12,7 @@ Uses Pandas and Python-Highcharts to do most of the work.
 Examples
 =========
 Play with the IPython notebook ``examples.ipynb``.
-You can do so online by clicking the Binder link above.
+You can do so online by clicking the Binder badge above.
 Sweet as!
 
 You can also upload your own transaction data into the notebook, but consider first `Binder's warning about private data <http://docs.mybinder.org/faq>`_.
