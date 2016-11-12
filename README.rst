@@ -13,9 +13,8 @@ Examples
 =========
 Play with the IPython notebook ``examples.ipynb``.
 You can do so online by clicking the Binder badge above.
-Sweet as!
+You can even upload your own transaction data into the notebook, but consider first `Binder's warning about private data <http://docs.mybinder.org/faq>`_.
 
-You can also upload your own transaction data into the notebook, but consider first `Binder's warning about private data <http://docs.mybinder.org/faq>`_.
 Your CSV of transactions should contain at least the following columns
 
 - ``'date'``: string; something consistent and recognizable by Pandas, e.g 2016-11-26
