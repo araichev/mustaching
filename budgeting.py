@@ -84,7 +84,7 @@ def get_duration(date, freq):
     dr = pd.date_range(date, freq=freq, periods=2)
     return dr[1] - dr[0]
 
-def summarize(transactions, freq='M', budget_and_freq=None, by_category=False,
+def summarize(transactions, freq=None, budget_and_freq=None, by_category=False,
   decimals=None):
     """
     Given a data frame of transactions, return a data frame with the columns:
@@ -107,31 +107,58 @@ def summarize(transactions, freq='M', budget_and_freq=None, by_category=False,
     f['income'] = f['amount'].map(lambda x: x if x > 0 else 0)
     f['expense'] = f['amount'].map(lambda x: -x if x < 0 else 0)
     f['saving'] = f['income'] - f['expense']    
-    keep_cols = ['date', 'income', 'expense', 'saving']
+    keep_cols = ['income', 'expense', 'saving']
 
+    if by_category and 'category' not in f.columns:
+        raise ValueError('category column missing from data frame')
+        
+    cols = [] # Columns to groupby
     if by_category:
-        if 'category' not in f.columns:
-            raise ValueError('category column missing from data frame')
-        
-        f = f.set_index('date').groupby([pd.TimeGrouper(freq, label='left'), 'category']
-          ).sum().fillna(0).reset_index()
+        cols.append('category')
         keep_cols.append('category')
+
+    if freq is None:
+        if cols:
+            g = f.groupby(cols).sum().reset_index()
+        else:
+            s = f.sum()
+            g = pd.DataFrame([s.values], columns=s.index)
+        if budget_and_freq is not None:
+            b, bfreq = budget_and_freq
+            d1, d2 = f['date'].min(), f['date'].max()
+            k = (d2 - d1)/get_duration(d1, bfreq)
+            g['period_budget'] = k*b 
+            keep_cols.append('period_budget')
     else:
-        f = f.set_index('date').resample(freq, label='left'
-          ).sum().fillna(0).reset_index()
-    if budget_and_freq is not None:
-        b, bfreq = budget_and_freq
-        f['num_budget_periods'] = f['date'].map(
-          lambda x: get_duration(x, freq)/get_duration(x, bfreq))
-        f['period_budget'] = f['num_budget_periods']*b
-        keep_cols.append('period_budget')
-        
-    f = f[keep_cols]
+        keep_cols.insert(0, 'date')
+        cols.insert(0, pd.TimeGrouper(freq, label='left'))
+        g = f.set_index('date').groupby(cols).sum().reset_index()
+        if budget_and_freq is not None:
+            b, bfreq = budget_and_freq
+            g['num_budget_periods'] = g['date'].map(
+              lambda x: get_duration(x, freq)/get_duration(x, bfreq))
+            g['period_budget'] = g['num_budget_periods']*b
+            keep_cols.append('period_budget')
+
+    # if freq:
+    #     f = f.set_index('date').groupby([pd.TimeGrouper(freq, label='left'), 'category']
+    #       ).sum().fillna(0).reset_index()
+    #     keep_cols.append('category')
+    # else:
+    #     f = f.set_index('date').resample(freq, label='left'
+    #       ).sum().fillna(0).reset_index()
+    # if budget_and_freq is not None:
+    #     b, bfreq = budget_and_freq
+    #     f['num_budget_periods'] = f['date'].map(
+    #       lambda x: get_duration(x, freq)/get_duration(x, bfreq))
+    #     f['period_budget'] = f['num_budget_periods']*b
+    #     keep_cols.append('period_budget')
+    g = g[keep_cols]
     
     if decimals is not None:
-        f = f.round(decimals)
+        g = g.round(decimals)
             
-    return f
+    return g
 
 def get_colors(column_name, n):
     """
@@ -173,7 +200,7 @@ def get_colors(column_name, n):
 
     return colors
 
-def plot(summary, currency=None, width=600, height=400):
+def plot(summary, currency='', width=600, height=400):
     """
     Plot the given transaction summary (output of :func:`summarize`) using Python HighCharts.
     Include the given currency units (string; e.g. 'NZD') in the plot labels.
@@ -181,10 +208,10 @@ def plot(summary, currency=None, width=600, height=400):
     f = summary.copy()
     chart = Highchart()
 
-    if currency is None:
-        y_text = 'Money'
-    else:
+    if currency:
         y_text = 'Money ({!s})'.format(currency)
+    else:
+        y_text = 'Money'
     
     options = {
         'chart': {
