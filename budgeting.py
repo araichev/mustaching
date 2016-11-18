@@ -84,6 +84,7 @@ def get_duration(date, freq):
     dr = pd.date_range(date, freq=freq, periods=2)
     return dr[1] - dr[0]
 
+# TODO: include first transaction date when no freq
 def summarize(transactions, freq=None, budget_and_freq=None, by_category=False,
   decimals=None):
     """
@@ -200,12 +201,18 @@ def get_colors(column_name, n):
 
     return colors
 
-def plot(summary, currency='', width=600, height=400):
+def plot(transactions, freq=None, budget_and_freq=None, by_category=False,
+  decimals=None, currency='', width=600, height=400):
     """
     Plot the given transaction summary (output of :func:`summarize`) using Python HighCharts.
     Include the given currency units (string; e.g. 'NZD') in the plot labels.
     """
-    f = summary.copy()
+    f = summarize(transactions, freq=freq, budget_and_freq=budget_and_freq, 
+      by_category=by_category, decimals=decimals)
+    if 'date' not in f.columns:
+        # Add first transaction date
+        f['date'] = transactions['date'].min()
+
     chart = Highchart()
 
     if currency:
