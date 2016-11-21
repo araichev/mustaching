@@ -135,7 +135,7 @@ def summarize(transactions, freq=None, budget_and_freq=None, by_category=False,
         # Add in first transactions date
         g['date'] = f['date'].min()
     else:
-        cols.insert(0, pd.TimeGrouper(freq, label='left'))
+        cols.insert(0, pd.TimeGrouper(freq, label='left', closed='left'))
         g = f.set_index('date').groupby(cols).sum().reset_index()
         if budget_and_freq is not None:
             b, bfreq = budget_and_freq
@@ -199,6 +199,9 @@ def plot(summary, currency='', width=None, height=None):
     f = summary.copy()
     chart = Highchart()
 
+    # HighCharts kludge: use categorical x-axis to display dates properly
+    dates = f['date'].map(lambda x:x.strftime('%Y-%m-%d')).unique().tolist()
+
     if currency:
         y_text = 'Money ({!s})'.format(currency)
     else:
@@ -213,12 +216,8 @@ def plot(summary, currency='', width=None, height=None):
             'text': 'Account Summary'
         },
         'xAxis': {
-            'type': 'datetime',
-            'labels': {
-                'format': '{value:%Y-%m-%d}',
-                'rotation': -45,
-                'align': 'right',
-            },
+            'type': 'category',
+            'categories': dates,
         },
         'yAxis': {
             'title': {
@@ -226,7 +225,7 @@ def plot(summary, currency='', width=None, height=None):
             }
         },
         'tooltip': {
-            'headerFormat': '<b>{point.key:%Y-%m-%d}</b> ' +
+            'headerFormat': '<b>{point.key}</b> ' +
               '(period start)<table>',
             'useHTML': True,
         },
@@ -279,7 +278,7 @@ def plot(summary, currency='', width=None, height=None):
                 g = f[cond2].copy()
                 name = '{!s} {!s}'.format(column.capitalize(), category)
                 opts = {'name': name, 'stack': column, 'color': color}
-                chart.add_data_set(g[['date', column]].values.tolist(), 'column', **opts)
+                chart.add_data_set(g[column].values.tolist(), 'column', **opts)
         
         def my_agg(group):
             d = {}
@@ -295,7 +294,7 @@ def plot(summary, currency='', width=None, height=None):
             opts = {'name': name, 'color': color, 'stack': column}
             if column == 'saving':
                 opts['visible'] = False
-            chart.add_data_set(g[['date', column]].values.tolist(), 'column', **opts) 
+            chart.add_data_set(g[column].values.tolist(), 'column', **opts) 
             
     else:
         options['tooltip']['pointFormat'] = '''
@@ -315,7 +314,7 @@ def plot(summary, currency='', width=None, height=None):
             opts = {'color': color, 'name': name}
             if column == 'saving':
                 opts['visible'] = False
-            chart.add_data_set(f[['date', column]].values.tolist(), 'column', **opts) 
+            chart.add_data_set(f[column].values.tolist(), 'column', **opts) 
 
     chart.set_dict_options(options)
 
