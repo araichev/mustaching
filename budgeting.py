@@ -200,7 +200,8 @@ def plot(summary, currency='', width=None, height=None):
     chart = Highchart()
 
     # HighCharts kludge: use categorical x-axis to display dates properly
-    dates = f['date'].map(lambda x:x.strftime('%Y-%m-%d')).unique().tolist()
+    dates = f['date'].map(lambda x:x.strftime('%Y-%m-%d')).unique()
+    dates = sorted(dates.tolist())
 
     if currency:
         y_text = 'Money ({!s})'.format(currency)
@@ -270,11 +271,12 @@ def plot(summary, currency='', width=None, height=None):
         # Split income and expense into different stacks split by category
         for column in ['income', 'expense']:
             cond1 = f[column] > 0
-            categories = f.loc[cond1, 'category'].unique()
+            categories = sorted(f.loc[cond1, 'category'].unique())
             n = len(categories)
             colors = get_colors(column, n)
             for category, color in zip(categories, colors):
-                cond2 = cond1 & (f['category'] == category)
+                cond2 = (cond1 | f[column].isnull()) &\
+                  (f['category'] == category)
                 g = f[cond2].copy()
                 name = '{!s} {!s}'.format(column.capitalize(), category)
                 opts = {'name': name, 'stack': column, 'color': color}
