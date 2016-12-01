@@ -21,7 +21,7 @@ Your CSV of transactions should contain at least the following columns
 - ``'amount'``: float; amount of transaction; positive or negative, indicating a credit or debit, respectively
 - ``'description'`` (optional): string; description of transaction, e.g. 'dandelion and burdock tea'
 - ``'category'`` (optional): string; categorization of description, e.g. 'healthcare' 
-- ``'comment'`` (optional): string; comment on transaction, e.g. 'a gram of prevention is worth 62.5 grams of cure'
+- ``'comment'`` (optional): string; comment on transaction, e.g. 'a gram of prevention is worth 16 grams of cure'
 
 
 Authors
