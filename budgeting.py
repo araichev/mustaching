@@ -96,7 +96,7 @@ def summarize(transactions, freq=None, budget_and_freq=None, by_category=False,
     - ``'saving'``: income - expense
 
     where the period is the given Pandas frequency ``freq``.
-    If that frequency is ``None``, then there is only one date, namely the chronologically first date in ``transactions``.
+    If that frequency is ``None``, then there is only one period, namely the runs from the first to the last date in ``transactions`` (ordered (chronologically), and the ``'date'`` value is the first date.
 
     If ``by_category``, then group by the ``'category'`` column of ``transactions`` in addition to the period.
 
