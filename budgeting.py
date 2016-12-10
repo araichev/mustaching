@@ -9,7 +9,7 @@ CONVENTIONS:
 
 TODO:
     - In tooltip, eliminate total if only one series in stack
-    - In tooltip, if category, include percentages on income and expense columns
+    - In tooltip, if category, include percentages on credit and debit columns
 """
 import random
 
@@ -20,10 +20,10 @@ from highcharts import Highchart
 
 
 def create_sample_transactions(date1, date2, freq='12H', 
-  income_categories=None, expense_categories=None):
+  credit_categories=None, debit_categories=None):
     """
     Create a data frame of sample transactions (with all fields) between the given dates (date strings that Pandas can interpret) and at the given Pandas frequency.
-    Each positive transaction will be assigned an income category from the given list ``income_categories``, and each negative transaction will be assigned an expense category from the given list ``expense_categories``.
+    Each positive transaction will be assigned an credit category from the given list ``credit_categories``, and each negative transaction will be assigned an debit category from the given list ``debit_categories``.
     If these lists are not given, then whimsical default ones will be created.
     """
     # Create date range
@@ -43,16 +43,16 @@ def create_sample_transactions(date1, date2, freq='12H',
     f['comment'] = [hex(random.getrandbits(40)) for i in range(n)]
 
     # Categorize amounts
-    if income_categories is None:
-        income_categories = ['yoga', 'reiki', 'thieving']
-    if expense_categories is None:
-        expense_categories = ['food', 'housing', 'transport', 'healthcare', 'soil testing']
+    if credit_categories is None:
+        credit_categories = ['yoga', 'reiki', 'thieving']
+    if debit_categories is None:
+        debit_categories = ['food', 'housing', 'transport', 'healthcare', 'soil testing']
 
     def categorize(x):
         if x > 0:
-            return random.choice(income_categories)
+            return random.choice(credit_categories)
         else:
-            return random.choice(expense_categories)
+            return random.choice(debit_categories)
 
     f['category'] = f['amount'].map(categorize)
     
@@ -91,9 +91,9 @@ def summarize(transactions, freq=None, budget_and_freq=None, by_category=False,
     Given a data frame of transactions, return a data frame with the columns:
     
     - ``'date'``: start date of period
-    - ``'income'``: sum of positive amounts for the period
-    - ``'expense'``: absolute value of the sum of the negative amounts for the period
-    - ``'saving'``: income - expense
+    - ``'credit'``: sum of positive amounts for the period
+    - ``'debit'``: absolute value of the sum of the negative amounts for the period
+    - ``'balance'``: credit - debit cumulative sum
 
     where the period is the given Pandas frequency ``freq``.
     If that frequency is ``None``, then there is only one period, namely the runs from the first to the last date in ``transactions`` (ordered (chronologically), and the ``'date'`` value is the first date.
@@ -107,10 +107,9 @@ def summarize(transactions, freq=None, budget_and_freq=None, by_category=False,
     Round all values to the given number of decimals.
     """
     f = transactions.copy()
-    f['income'] = f['amount'].map(lambda x: x if x > 0 else 0)
-    f['expense'] = f['amount'].map(lambda x: -x if x < 0 else 0)
-    f['saving'] = f['income'] - f['expense']    
-    keep_cols = ['date', 'income', 'expense', 'saving']
+    f['credit'] = f['amount'].map(lambda x: x if x > 0 else 0)
+    f['debit'] = f['amount'].map(lambda x: -x if x < 0 else 0)
+    keep_cols = ['date', 'credit', 'debit', 'balance']
 
     if by_category and 'category' not in f.columns:
         raise ValueError('category column missing from data frame')
@@ -123,9 +122,13 @@ def summarize(transactions, freq=None, budget_and_freq=None, by_category=False,
     if freq is None:
         if cols:
             g = f.groupby(cols).sum().reset_index()
+            g['balance'] = g['credit'].sum() - g['debit'].sum()
         else:
-            s = f.sum()
-            g = pd.DataFrame([s.values], columns=s.index)
+            g = {}
+            g['credit'] = f['credit'].sum()
+            g['debit'] = f['debit'].sum()
+            g['balance'] = g['credit'] - g['debit']
+            g = pd.DataFrame(g, index=[0])
         if budget_and_freq is not None:
             b, bfreq = budget_and_freq
             d1, d2 = f['date'].min(), f['date'].max()
@@ -135,8 +138,20 @@ def summarize(transactions, freq=None, budget_and_freq=None, by_category=False,
         # Add in first transactions date
         g['date'] = f['date'].min()
     else:
-        cols.insert(0, pd.TimeGrouper(freq, label='left', closed='left'))
-        g = f.set_index('date').groupby(cols).sum().reset_index()
+        tg = pd.TimeGrouper(freq, label='left', closed='left')
+        if cols:
+            cols.insert(0, tg)
+            g = f.set_index('date').groupby(cols).sum().reset_index()
+            balance = 0
+            balances = []
+            for __, group in g.set_index('date').groupby(tg):
+                balance += group['credit'].sum() - group['debit'].sum()
+                n = group.shape[0]
+                balances.extend([balance for i in range(n)])
+            g['balance'] = balances
+        else:
+            g = f.set_index('date').groupby(tg).sum().reset_index()
+            g['balance'] = (g['credit'] - g['debit']).cumsum()            
         if budget_and_freq is not None:
             b, bfreq = budget_and_freq
             g['num_budget_periods'] = g['date'].map(
@@ -153,13 +168,13 @@ def summarize(transactions, freq=None, budget_and_freq=None, by_category=False,
 
 def get_colors(column_name, n):
     """
-    Return a list of ``n`` (positive integer) nice RGB color strings to use for color coding the given column (string; one of ``['income', 'expense', 'period_budget', 'saving']``.
+    Return a list of ``n`` (positive integer) nice RGB color strings to use for color coding the given column (string; one of ``['credit', 'debit', 'period_budget', 'balance']``.
 
     NOTES:
         - Returns at most 9 distinct colors. Repeats color beyond that.
         - Helper function for :func:`plot`.  
     """
-    VALID_COLUMN_NAMES = ['income', 'expense', 'period_budget', 'saving']
+    VALID_COLUMN_NAMES = ['credit', 'debit', 'period_budget', 'balance']
     if column_name not in VALID_COLUMN_NAMES:
         raise ValueError('Column name must be one of {!s}'.format(VALID_COLUMN_NAMES))
 
@@ -170,14 +185,14 @@ def get_colors(column_name, n):
     kk = str(k)
 
     # Build colors in clipped range
-    if column_name == 'income':
+    if column_name == 'credit':
         colors = cl.scales[kk]['seq']['GnBu'][::-1]
-    elif column_name == 'expense':
+    elif column_name == 'debit':
         colors = cl.scales[kk]['seq']['OrRd'][::-1]
     elif column_name == 'period_budget':
         colors = ['rgb(255, 255, 255)' for __ in range(k)]
-    elif column_name == 'saving':
-        colors = ['rgb(117,107,177)' for __ in range(k)]
+    elif column_name == 'balance':
+        colors = ['#555' for __ in range(k)]
 
     # Extend colors to unclipped range as required
     if n <= 0:
@@ -268,8 +283,8 @@ def plot(summary, currency='', width=None, height=None):
           '''
         options['tooltip']['shared'] = False
 
-        # Split income and expense into different stacks split by category
-        for column in ['income', 'expense']:
+        # Split credit and debit into different stacks split by category
+        for column in ['credit', 'debit']:
             cond1 = f[column] > 0
             categories = sorted(f.loc[cond1, 'category'].unique())
             n = len(categories)
@@ -285,18 +300,24 @@ def plot(summary, currency='', width=None, height=None):
         def my_agg(group):
             d = {}
             d['period_budget'] = group['period_budget'].iat[0]
-            d['saving'] = group['saving'].sum()
+            d['balance'] = group['balance'].iat[0]
             return pd.Series(d)
         
         g = f.groupby('date').apply(my_agg).reset_index()
-        columns = ['period_budget', 'saving']
+        columns = ['period_budget', 'balance']
         for column in columns:
             name = column.split('_')[-1].capitalize()
             color = get_colors(column, 1)[0]
-            opts = {'name': name, 'color': color, 'stack': column}
-            if column == 'saving':
-                opts['visible'] = False
-            chart.add_data_set(g[column].values.tolist(), 'column', **opts) 
+            opts = {
+              'name': name, 
+              'color': color, 
+              }
+            if column == 'balance':
+                opts['series_type'] = 'line'
+            else:
+                opts['series_type'] = 'column'
+                opts['stack'] = column
+            chart.add_data_set(g[column].values.tolist(), **opts) 
             
     else:
         options['tooltip']['pointFormat'] = '''
@@ -309,14 +330,19 @@ def plot(summary, currency='', width=None, height=None):
           '''
         options['tooltip']['footerFormat'] = '</table>'
         options['tooltip']['shared'] = True
-        columns = ['income', 'expense', 'period_budget', 'saving']
+        columns = ['credit', 'debit', 'period_budget', 'balance']
         for column in columns:
             name = column.split('_')[-1].capitalize()
             color = get_colors(column, 1)[0]
-            opts = {'color': color, 'name': name}
-            if column == 'saving':
-                opts['visible'] = False
-            chart.add_data_set(f[column].values.tolist(), 'column', **opts) 
+            opts = {
+              'color': color, 
+              'name': name,
+              }
+            if column == 'balance':
+                opts['series_type'] = 'line'
+            else:
+                opts['series_type'] = 'column'
+            chart.add_data_set(f[column].values.tolist(), **opts) 
 
     chart.set_dict_options(options)
 
