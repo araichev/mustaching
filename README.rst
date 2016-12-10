@@ -27,3 +27,16 @@ Your CSV of transactions should contain at least the following columns
 Authors
 ========
 - Alex Raichev, 2016-11
+
+
+History
+========
+
+0.1.1
+------
+Fixed date labels and off-by-1-day error in time grouping
+
+
+0.1.0
+------
+First release
