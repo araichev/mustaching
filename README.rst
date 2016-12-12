@@ -5,11 +5,11 @@ Budgeting
     :target: http://mybinder.org:/repo/araichev/budgeting
 
 
-Some Python 3.4+ code for slicing, dicing, and plotting a CSV of personal finance data.
+Python 3.4+ code for summarizing and plotting a CSV of personal finance data.
 Uses Pandas and Python-Highcharts to do most of the work.
 
 
-Examples
+Usage
 =========
 Play with the IPython notebook ``examples.ipynb``.
 You can do so online by clicking the Binder badge above.
@@ -22,6 +22,8 @@ Your CSV of transactions should contain at least the following columns
 - ``'description'`` (optional): string; description of transaction, e.g. 'dandelion and burdock tea'
 - ``'category'`` (optional): string; categorization of description, e.g. 'healthcare' 
 - ``'comment'`` (optional): string; comment on transaction, e.g. 'a gram of prevention is worth 16 grams of cure'
+
+The main business logic can be found in ``budgeting.py``
 
 
 Authors
