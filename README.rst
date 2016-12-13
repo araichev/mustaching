@@ -34,11 +34,23 @@ Authors
 History
 ========
 
-0.1.1
-------
+1.1.0, 2016-12-13
+------------------
+- Made ``read_ransactions()`` infer column names a little
+- Made ``summarize()`` always create ``'period_budget'`` column and fill it with NaNs if no budget given
+
+
+1.0.0, 2016-12-10
+------------------
+- Changed summary columns to ``'credit'``, ``'debit'``, and ``'balance'``
+- Plotted balance as a cumulative sum line series
+
+
+0.1.1, 2016-11-21
+------------------
 Fixed date labels and off-by-1-day error in time grouping
 
 
-0.1.0
-------
+0.1.0, 2016-11-18
+------------------
 First release
