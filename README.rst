@@ -34,6 +34,13 @@ Authors
 History
 ========
 
+1.2.0,
+------------------
+- Lowercased category names and values when reading transactions
+- Added percentages to bar chart stacks when splitting by categories
+- Sorted categories from highest to lowest values in bar chart stacks
+
+
 1.1.0, 2016-12-13
 ------------------
 - Made ``read_ransactions()`` infer column names a little

@@ -10,7 +10,6 @@ CONVENTIONS:
 TODO:
     - In tooltip, remove stack total in balance series
     - In tooltip, remove stack total if only one series in stack
-    - In tooltip, if category, include percentages on credit and debit columns
 """
 import random
 
@@ -105,6 +104,7 @@ def read_transactions(path, date_format=None):
     # Parse some
     f['date'] = pd.to_datetime(f['date'], format=date_format)
     if 'category' in f.columns:
+        f['category'] = f['category'].str.lower()
         f['category'] = f['category'].astype('category')
 
     return f
@@ -161,7 +161,7 @@ def summarize(transactions, freq=None, budget_and_freq=(np.nan, 'A'),
         d1, d2 = f['date'].min(), f['date'].max()
         k = (d2 - d1)/get_duration(d1, bfreq)
         g['period_budget'] = k*b 
-        # Add in first transactions date
+        # Add in first transaction date
         g['date'] = f['date'].min()
     else:
         tg = pd.TimeGrouper(freq, label='left', closed='left')
@@ -211,7 +211,7 @@ def get_colors(column_name, n):
 
     # Clip n to range or sequential-type colors
     low = 3
-    high = 9
+    high = 6
     k = np.clip(n, low, high) 
     kk = str(k)
 
@@ -272,8 +272,7 @@ def plot(summary, currency='', width=None, height=None):
             }
         },
         'tooltip': {
-            'headerFormat': '<b>{point.key}</b> ' +
-              '(period start)<table>',
+            'headerFormat': '<b>{point.key}</b><table>',
             'useHTML': True,
         },
         'plotOptions': {
@@ -298,8 +297,9 @@ def plot(summary, currency='', width=None, height=None):
         options['plotOptions']['column']['stacking'] = 'normal'
         options['tooltip']['pointFormat'] = '''
           <tr>
-          <td style="padding-right:1em">{series.name}</td>
-          <td style="text-align:right">{point.y:,.0f} ''' + currency +\
+          <td style="padding-right:1em">{series.name}  
+          ({point.percentage:.1f}%)</td>
+          <td style="text-align:right">{point.y:,.0f}''' + currency +\
           '''
           </td>
           </tr>
@@ -314,12 +314,15 @@ def plot(summary, currency='', width=None, height=None):
           '''
         options['tooltip']['shared'] = False
 
-        # Split credit and debit into different stacks split by category
+        # Split credit and debit into two stacks, each split by category
         for column in ['credit', 'debit']:
-            cond1 = f[column] > 0
-            categories = sorted(f.loc[cond1, 'category'].unique())
+            # Sort categories by greatest value to least
+            g = f.groupby('category').sum().reset_index(
+              ).sort_values(column, ascending=False)
+            categories = g.loc[g[column] > 0, 'category'].unique()
             n = len(categories)
             colors = get_colors(column, n)
+            cond1 = f[column] > 0
             for category, color in zip(categories, colors):
                 cond2 = (cond1 | f[column].isnull()) &\
                   (f['category'] == category)
