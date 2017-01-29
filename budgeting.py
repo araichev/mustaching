@@ -128,7 +128,7 @@ def summarize(transactions, freq=None, budget_and_freq=(np.nan, 'A'),
     - ``'credit'``: sum of positive amounts for the period
     - ``'debit'``: absolute value of the sum of the negative amounts for the period
     - ``'balance'``: credit - debit cumulative sum
-    - ``'savings_rate'``: (credit - debit)/credit
+    - ``'period_savings_rate'``: (credit - debit)/credit
     - ``'period_budget'``: budget scaled to the given period ``freq``
 
     where the period is given by the Pandas frequency string ``freq``.
@@ -146,18 +146,18 @@ def summarize(transactions, freq=None, budget_and_freq=(np.nan, 'A'),
 
     f['credit'] = f['amount'].map(lambda x: x if x > 0 else 0)
     f['debit'] = f['amount'].map(lambda x: -x if x < 0 else 0)
-    
+
     if freq is None:
         if by_category:
             g = f.groupby('category').sum().reset_index()
             g['balance'] = g['credit'].sum() - g['debit'].sum()
-            g['savings_rate'] = g['balance']/g['credit'].sum()
+            g['period_savings_rate'] = g['balance']/g['credit'].sum()
         else:
             g = {}
             g['credit'] = f['credit'].sum()
             g['debit'] = f['debit'].sum()
             g['balance'] = g['credit'] - g['debit']
-            g['savings_rate'] = g['balance']/g['credit'].sum()
+            g['period_savings_rate'] = g['balance']/g['credit'].sum()
             g = pd.DataFrame(g, index=[0])
 
         b, bfreq = budget_and_freq
@@ -173,21 +173,21 @@ def summarize(transactions, freq=None, budget_and_freq=(np.nan, 'A'),
             g = f.set_index('date').groupby(cols).sum().reset_index()
             balance = 0
             balances = []
-            savings_rates = []
+            psrs = []
             for __, group in g.set_index('date').groupby(tg):
                 n = group.shape[0]
                 balance += (group['credit'] - group['debit']).sum()
                 balances.extend([balance for i in range(n)])
-                savings_rate =\
+                psr =\
                   (group['credit'] - group['debit']).sum()/\
                   group['credit'].sum()
-                savings_rates.extend([savings_rate for i in range(n)])
+                psrs.extend([psr for i in range(n)])
             g['balance'] = balances
-            g['savings_rate'] = savings_rates
+            g['period_savings_rate'] = psrs
         else:
             g = f.set_index('date').groupby(tg).sum().reset_index()
             g['balance'] = (g['credit'] - g['debit']).cumsum()  
-            g['savings_rate'] = (g['credit'] - g['debit'])/g['credit']
+            g['period_savings_rate'] = (g['credit'] - g['debit'])/g['credit']
 
         b, bfreq = budget_and_freq
         g['num_budget_periods'] = g['date'].map(
@@ -196,10 +196,10 @@ def summarize(transactions, freq=None, budget_and_freq=(np.nan, 'A'),
 
     if by_category:
         keep_cols = ['date', 'credit', 'debit', 'balance', 
-          'savings_rate', 'category', 'period_budget']
+          'category', 'period_savings_rate', 'period_budget']
     else:
         keep_cols = ['date', 'credit', 'debit', 'balance', 
-          'savings_rate', 'period_budget']
+          'period_savings_rate', 'period_budget']
 
     g = g[keep_cols].copy()
     
