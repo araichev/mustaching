@@ -146,7 +146,7 @@ def summarize(transactions, freq=None, budget_and_freq=(np.nan, 'A'),
 
     f['credit'] = f['amount'].map(lambda x: x if x > 0 else 0)
     f['debit'] = f['amount'].map(lambda x: -x if x < 0 else 0)
-
+    
     if freq is None:
         if by_category:
             g = f.groupby('category').sum().reset_index()
