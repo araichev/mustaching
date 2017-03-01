@@ -1,17 +1,17 @@
-Budgeting
+Mustaching
 ***********
 
 .. image:: http://mybinder.org/badge.svg 
-    :target: http://mybinder.org:/repo/araichev/budgeting
+    :target: http://mybinder.org:/repo/araichev/mustaching
 
 
-Python 3.4+ code for summarizing and plotting a CSV of personal finance data.
+A simple Python 3.5 project for summarizing and plotting a CSV of personal finance data.
 Uses Pandas and Python-Highcharts to do most of the work.
 
 
 Usage
 =========
-Play with the IPython notebook ``examples.ipynb``.
+Play with the IPython notebook ``ipynb/examples.ipynb``.
 You can do so online by clicking the Binder badge above.
 You can even upload your own transaction data into the notebook, but consider first `Binder's warning about private data <http://docs.mybinder.org/faq>`_.
 
@@ -23,7 +23,7 @@ Your CSV of transactions should contain at least the following columns
 - ``'category'`` (optional): string; categorization of description, e.g. 'healthcare' 
 - ``'comment'`` (optional): string; comment on transaction, e.g. 'a gram of prevention is worth 16 grams of cure'
 
-The main business logic can be found in ``budgeting.py``
+The main business logic can be found in ``budgeting/main.py``
 
 
 Authors
@@ -39,6 +39,7 @@ History
 - Lowercased category names and values when reading transactions
 - Added percentages to bar chart stacks when splitting by categories
 - Sorted categories from highest to lowest values in bar chart stacks
+- Changed name to 'mustaching' and restructured directories
 
 
 1.1.0, 2016-12-13

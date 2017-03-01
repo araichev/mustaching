@@ -119,7 +119,7 @@ def get_duration(date, freq):
     dr = pd.date_range(date, freq=freq, periods=2)
     return dr[1] - dr[0]
 
-def summarize(transactions, freq=None, budget_and_freq=(np.nan, 'A'), 
+def summarize(transactions, freq=None, budget_and_freq=None, 
   by_category=False, decimals=None):
     """
     Given a data frame of transactions, return a data frame with the columns:
@@ -129,9 +129,9 @@ def summarize(transactions, freq=None, budget_and_freq=(np.nan, 'A'),
     - ``'debit'``: absolute value of the sum of the negative amounts for the period
     - ``'balance'``: credit - debit cumulative sum
     - ``'period_savings_rate'``: (credit - debit)/credit
-    - ``'period_budget'``: budget scaled to the given period ``freq``
+    - ``'period_budget'``: optional and only appears if ``budget_and_freq`` is given; budget scaled to the given period ``freq``
 
-    where the period is given by the Pandas frequency string ``freq``.
+    Here the period is given by the Pandas frequency string ``freq``.
     If that frequency is ``None``, then there is only one period, namely the runs from the first to the last date in ``transactions`` (ordered (chronologically), and the ``'date'`` value is the first date.
     
     The ``budget_and_freq`` is a pair (budget amount, budget period as a Pandas frequency string).
@@ -160,10 +160,12 @@ def summarize(transactions, freq=None, budget_and_freq=(np.nan, 'A'),
             g['period_savings_rate'] = g['balance']/g['credit'].sum()
             g = pd.DataFrame(g, index=[0])
 
-        b, bfreq = budget_and_freq
-        d1, d2 = f['date'].min(), f['date'].max()
-        k = (d2 - d1)/get_duration(d1, bfreq)
-        g['period_budget'] = k*b 
+        if budget_and_freq is not None:
+            b, bfreq = budget_and_freq
+            d1, d2 = f['date'].min(), f['date'].max()
+            k = (d2 - d1)/get_duration(d1, bfreq)
+            g['period_budget'] = k*b 
+
         # Add in first transaction date
         g['date'] = f['date'].min()
     else:
@@ -189,17 +191,19 @@ def summarize(transactions, freq=None, budget_and_freq=(np.nan, 'A'),
             g['balance'] = (g['credit'] - g['debit']).cumsum()  
             g['period_savings_rate'] = (g['credit'] - g['debit'])/g['credit']
 
-        b, bfreq = budget_and_freq
-        g['num_budget_periods'] = g['date'].map(
-          lambda x: get_duration(x, freq)/get_duration(x, bfreq))
-        g['period_budget'] = g['num_budget_periods']*b
+        if budget_and_freq is not None:
+            b, bfreq = budget_and_freq
+            g['num_budget_periods'] = g['date'].map(
+              lambda x: get_duration(x, freq)/get_duration(x, bfreq))
+            g['period_budget'] = g['num_budget_periods']*b
 
+
+    keep_cols = ['date', 'credit', 'debit', 'balance', 
+      'period_savings_rate']
     if by_category:
-        keep_cols = ['date', 'credit', 'debit', 'balance', 
-          'category', 'period_savings_rate', 'period_budget']
-    else:
-        keep_cols = ['date', 'credit', 'debit', 'balance', 
-          'period_savings_rate', 'period_budget']
+        keep_cols.insert(4, 'category')
+    if budget_and_freq is not None:
+        keep_cols.append('period_budget')
 
     g = g[keep_cols].copy()
     
@@ -304,6 +308,8 @@ def plot(summary, currency='', width=None, height=None):
     if height is not None:
         options['chart']['height'] = height
 
+    budget = 'period_budget' in f.columns
+
     if 'category' in f.columns:
         options['plotOptions']['column']['stacking'] = 'normal'
         options['tooltip']['pointFormat'] = '''
@@ -342,17 +348,18 @@ def plot(summary, currency='', width=None, height=None):
                 opts = {'name': name, 'stack': column, 'color': color}
                 chart.add_data_set(g[column].values.tolist(), 'column', **opts)
         
-        def my_agg(group):
+        def my_agg(group, budget=False):
             d = {}
-            d['period_budget'] = group['period_budget'].iat[0]
+            if budget:
+                d['period_budget'] = group['period_budget'].iat[0]
             d['balance'] = group['balance'].iat[0]
             return pd.Series(d)
         
-        g = f.groupby('date').apply(my_agg).reset_index()
-        if g['period_budget'].dropna().empty:
-            columns = ['balance']
-        else:
+        g = f.groupby('date').apply(lambda x: my_agg(x, budget)).reset_index()
+        if budget:
             columns = ['period_budget', 'balance']
+        else:
+            columns = ['balance']
         for column in columns:
             name = column.split('_')[-1].capitalize()
             color = get_colors(column, 1)[0]
@@ -378,10 +385,10 @@ def plot(summary, currency='', width=None, height=None):
           '''
         options['tooltip']['footerFormat'] = '</table>'
         options['tooltip']['shared'] = True
-        if f['period_budget'].dropna().empty:
-            columns = ['credit', 'debit', 'balance']
-        else:
+        if budget:
             columns = ['credit', 'debit', 'period_budget', 'balance']
+        else:
+            columns = ['credit', 'debit', 'balance']
         for column in columns:
             name = column.split('_')[-1].capitalize()
             color = get_colors(column, 1)[0]
