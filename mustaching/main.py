@@ -1,6 +1,6 @@
 """
 CONVENTIONS:
-    - A data frame of *transactions* is one with the following columns:
+    - A DataFrame of *transactions* is one with the following columns:
         * date: Numpy datetime
         * amount: float
         * description (optional): string
@@ -12,6 +12,7 @@ TODO:
     - In tooltip, remove stack total if only one series in stack
 """
 import random
+import datetime as dt
 
 import pandas as pd
 import numpy as np
@@ -21,11 +22,12 @@ from highcharts import Highchart
 COLUMNS = {'date', 'amount', 'description', 'category', 'comment'}
 REQUIRED_COLUMNS = {'date', 'amount'}
 
-def create_sample_transactions(date1, date2, freq='12H', 
+def build_sample_transactions(date1, date2, freq='12H', 
   credit_categories=None, debit_categories=None):
     """
-    Create a data frame of sample transactions (with all fields) between the given dates (date strings that Pandas can interpret) and at the given Pandas frequency.
-    Each positive transaction will be assigned an credit category from the given list ``credit_categories``, and each negative transaction will be assigned an debit category from the given list ``debit_categories``.
+    Create a DataFrame of sample transactions between the given dates (date strings that Pandas can interpret) and at the given Pandas frequency.
+    Include all the columns in the set ``COLUMNS``.
+    Each positive transaction will be assigned a credit category from the given list ``credit_categories``, and each negative transaction will be assigned a debit category from the given list ``debit_categories``.
     If these lists are not given, then whimsical default ones will be created.
     """
     # Create date range
@@ -38,7 +40,6 @@ def create_sample_transactions(date1, date2, freq='12H',
     f = pd.DataFrame(np.random.randint(low, high, size=(n, 1)), 
       columns=['amount'], index=rng)
     f = f.reset_index()
-    f['date'] = f['date'].map(lambda x: x.date())
     
     # Create random descriptions and comments
     f['description'] = [hex(random.getrandbits(20)) for i in range(n)]
@@ -57,27 +58,28 @@ def create_sample_transactions(date1, date2, freq='12H',
             return random.choice(debit_categories)
 
     f['category'] = f['amount'].map(categorize)
+    f['category'] = f['category'].astype('category')
     
     return f
 
 def find_columns(raw_transactions):
     """
-    Given a data frame, try to find in it the columns that correspond those in ``COLUMNS``.
-    Build a dictionary of this correspondance of the form
-    key column name -> column name in given data frame.
-    Return the resulting dictionary, which might be incomplete.
+    Given a DataFrame, lowercase the column names and search for the columns in ``COLUMNS``.
+    Build a dictionary of the form
+    name in ``COLUMNS`` -> name in given DataFrame
+    and return the result, which might not contain all the ``COLUMNS`` keys.
     """
     f = raw_transactions.copy()
     col_dict = {}
-    for c in f.columns:
-        for key in COLUMNS:
-            if key in c.lower():
+    for key in COLUMNS:
+        for c in f.columns:
+            if key == c.lower():
                 col_dict[key] = c
     return col_dict
 
 def read_transactions(path, date_format=None):
     """
-    Read a CSV file of transactions located at the given path (string or Path object), parse the date and category, and return the resulting data frame.
+    Read a CSV file of transactions located at the given path (string or Path object), parse the date and category, and return the resulting DataFrame.
 
     The CSV should contain at least the following columns
 
@@ -122,14 +124,14 @@ def get_duration(date, freq):
 def summarize(transactions, freq=None, budget_and_freq=None, 
   by_category=False, decimals=None):
     """
-    Given a data frame of transactions, return a data frame with the columns:
+    Given a DataFrame of transactions, return a DataFrame with the columns:
     
     - ``'date'``: start date of period
     - ``'credit'``: sum of positive amounts for the period
     - ``'debit'``: absolute value of the sum of the negative amounts for the period
     - ``'balance'``: credit - debit cumulative sum
     - ``'period_savings_rate'``: (credit - debit)/credit
-    - ``'period_budget'``: optional and only appears if ``budget_and_freq`` is given; budget scaled to the given period ``freq``
+    - ``'period_budget'``: only appears if ``budget_and_freq`` is given; budget scaled to the given period ``freq``
 
     Here the period is given by the Pandas frequency string ``freq``.
     If that frequency is ``None``, then there is only one period, namely the runs from the first to the last date in ``transactions`` (ordered (chronologically), and the ``'date'`` value is the first date.
@@ -142,7 +144,7 @@ def summarize(transactions, freq=None, budget_and_freq=None,
     """
     f = transactions.copy()
     if by_category and 'category' not in f.columns:
-        raise ValueError('category column missing from data frame')
+        raise ValueError('category column missing from DataFrame')
 
     f['credit'] = f['amount'].map(lambda x: x if x > 0 else 0)
     f['debit'] = f['amount'].map(lambda x: -x if x < 0 else 0)
@@ -163,7 +165,7 @@ def summarize(transactions, freq=None, budget_and_freq=None,
         if budget_and_freq is not None:
             b, bfreq = budget_and_freq
             d1, d2 = f['date'].min(), f['date'].max()
-            k = (d2 - d1)/get_duration(d1, bfreq)
+            k = (d2 - d1 + dt.timedelta(days=1))/get_duration(d1, bfreq)
             g['period_budget'] = k*b 
 
         # Add in first transaction date
@@ -217,7 +219,7 @@ def get_colors(column_name, n):
     Return a list of ``n`` (positive integer) nice RGB color strings to use for color coding the given column (string; one of ``['credit', 'debit', 'period_budget', 'balance']``.
 
     NOTES:
-        - Returns at most 9 distinct colors. Repeats color beyond that.
+        - Returns at most 6 distinct colors. Repeats color beyond that.
         - Helper function for :func:`plot`.  
     """
     VALID_COLUMN_NAMES = ['credit', 'debit', 'period_budget', 'balance']
@@ -316,7 +318,7 @@ def plot(summary, currency='', width=None, height=None):
           <tr>
           <td style="padding-right:1em">{series.name}  
           ({point.percentage:.1f}%)</td>
-          <td style="text-align:right">{point.y:,.0f}''' + currency +\
+          <td style="text-align:right">{point.y:,.0f} ''' + currency +\
           '''
           </td>
           </tr>

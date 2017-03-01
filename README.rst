@@ -5,7 +5,7 @@ Mustaching
     :target: http://mybinder.org:/repo/araichev/mustaching
 
 
-A simple Python 3.5 project for summarizing and plotting a CSV of personal finance data.
+A small Python 3.5 package inspired by Mr. Money Mustache for summarizing and plotting a CSV of personal finance data.
 Uses Pandas and Python-Highcharts to do most of the work.
 
 
