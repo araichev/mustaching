@@ -34,12 +34,18 @@ Authors
 History
 ========
 
-1.2.0,
+1.2.1, 2017-03-01
+-----------------
+- Fixed README and ``ipynb/examples.ipynb``
+
+
+1.2.0, 2017-03-01
 ------------------
 - Lowercased category names and values when reading transactions
 - Added percentages to bar chart stacks when splitting by categories
 - Sorted categories from highest to lowest values in bar chart stacks
 - Changed name to 'mustaching' and restructured directories
+- Wrote automated tests
 
 
 1.1.0, 2016-12-13
