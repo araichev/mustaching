@@ -8,6 +8,8 @@ CONVENTIONS:
         * comment (optional): string
 
 TODO:
+    - Create docs
+    - Upload to PyPi
     - In tooltip, remove stack total in balance series
     - In tooltip, remove stack total if only one series in stack
 """
@@ -121,6 +123,7 @@ def get_duration(date, freq):
     dr = pd.date_range(date, freq=freq, periods=2)
     return dr[1] - dr[0]
 
+# TODO: add period_debit_frac column
 def summarize(transactions, freq=None, budget_and_freq=None, 
   by_category=False, decimals=None):
     """
