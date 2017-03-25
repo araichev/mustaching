@@ -111,7 +111,39 @@ def read_transactions(path, date_format=None):
         f['category'] = f['category'].str.lower()
         f['category'] = f['category'].astype('category')
 
-    return f
+    return f.sort_values(['date', 'amount'])
+
+# TODO: Write test for this
+def put_repeating(transpactions, amount, freq, 
+  description=None, category=None, comment=None, start_date=None, end_date=None):
+    """
+    Given a DataFrame of transactions, add to it a repeating transaction at the given frequency for the given amount with the given optional description, category, and comment.
+    Restrict the repeating transaction to the given start and end dates (date objects), if given; otherwise repeat from the first transaction date to the last.
+    Drop duplicates and return the resulting DataFrame.
+    """
+    f = transactions.copy()
+    
+    if start_date is None:
+        start_date = f['date'].min()
+    if end_date is None:
+        end_date = f['date'].max()
+
+    g = pd.DataFrame([])
+    dates = pd.date_range(start_date, end_date, freq=freq)
+    g['date'] = dates 
+    g['amount'] = amount
+
+    if description is not None:
+        g['description'] = description
+    if category is not None:
+        g['category'] = category
+        g['category'] = g['category'].astype('category')
+    if comment is not None:
+        g['comment'] = comment
+    
+    h = pd.concat([f, g]).drop_duplicates().sort_values(['date', 'amount'])
+    
+    return h
 
 def get_duration(date, freq):
     """
