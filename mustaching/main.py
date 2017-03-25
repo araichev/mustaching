@@ -124,6 +124,7 @@ def get_duration(date, freq):
     return dr[1] - dr[0]
 
 # TODO: add period_debit_frac column
+# TODO: remove budget_and_freq
 def summarize(transactions, freq=None, budget_and_freq=None, 
   by_category=False, decimals=None):
     """
