@@ -79,7 +79,7 @@ def find_columns(raw_transactions):
                 col_dict[key] = c
     return col_dict
 
-def read_transactions(path, date_format=None):
+def read_transactions(path, date_format=None, **kwargs):
     """
     Read a CSV file of transactions located at the given path (string or Path object), parse the date and category, and return the resulting DataFrame.
 
@@ -93,7 +93,7 @@ def read_transactions(path, date_format=None):
 
     If the date format string ``date_format`` is given,  e.g ``'%Y-%m-%d'``, then parse dates using that format; otherwise use let Pandas guess the date format.
     """
-    f = pd.read_csv(path)
+    f = pd.read_csv(path, **kwargs)
     col_dict = find_columns(f)
     if not set(col_dict.keys()) >= REQUIRED_COLUMNS:
         raise ValueError(
@@ -114,15 +114,14 @@ def read_transactions(path, date_format=None):
     return f.sort_values(['date', 'amount'])
 
 # TODO: Write test for this
-def put_repeating(transpactions, amount, freq, 
+def put_repeating(transactions, amount, freq, 
   description=None, category=None, comment=None, start_date=None, end_date=None):
     """
     Given a DataFrame of transactions, add to it a repeating transaction at the given frequency for the given amount with the given optional description, category, and comment.
     Restrict the repeating transaction to the given start and end dates (date objects), if given; otherwise repeat from the first transaction date to the last.
-    Drop duplicates and return the resulting DataFrame.
+    Drop duplicate rows and return the resulting DataFrame.
     """
     f = transactions.copy()
-    
     if start_date is None:
         start_date = f['date'].min()
     if end_date is None:
