@@ -5,7 +5,7 @@ Mustaching
     :target: http://mybinder.org:/repo/araichev/mustaching
 
 
-A small Python 3.5 package inspired by Mr. Money Mustache for summarizing and plotting a CSV of personal finance data.
+A tiny Python 3.5 package inspired by Mr. Money Mustache to summarize and plot personal finance data given in the form of a CSV file.
 Uses Pandas and Python-Highcharts to do most of the work.
 
 
@@ -23,7 +23,7 @@ Your CSV of transactions should contain at least the following columns
 - ``'category'`` (optional): string; categorization of description, e.g. 'healthcare' 
 - ``'comment'`` (optional): string; comment on transaction, e.g. 'a gram of prevention is worth 16 grams of cure'
 
-The main business logic can be found in ``budgeting/main.py``
+The business logic can be found in ``budgeting/main.py``
 
 
 Authors
@@ -33,6 +33,13 @@ Authors
 
 History
 ========
+
+2.0.0, 2017-04-25
+-----------------
+- Removed ``budget_and_freq`` option, because i don't need that extra complexity
+- Calculated spending rate
+- Added ``insert_repeating()`` to avoid having to record repeating transactions in my personal spendings
+
 
 1.2.1, 2017-03-01
 -----------------
