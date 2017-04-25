@@ -6,12 +6,6 @@ CONVENTIONS:
         * description (optional): string
         * category (optional): Pandas 'category'
         * comment (optional): string
-
-TODO:
-    - Create docs
-    - Upload to PyPi
-    - In tooltip, remove stack total in balance series
-    - In tooltip, remove stack total if only one series in stack
 """
 import random
 import datetime as dt
