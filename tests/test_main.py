@@ -1,6 +1,8 @@
 import datetime as dt
+from itertools import product
 
 import pytest
+import highcharts
 
 from .context import mustaching
 from mustaching import *
@@ -33,11 +35,19 @@ def test_get_duration():
 	x = get_duration(date, 'A')
 	assert x.days == 365
 
+def test_insert_repeating():
+	t = build_sample_transactions('2017-01-01', '2017-03-01')
+	desc = 'oh no!'
+	f = insert_repeating(t, -100, 'MS', desc)
+	assert f.shape[0] == t.shape[0] + 3
+	assert f['amount'].sum() == t['amount'].sum() - 300
+	
 def test_summarize():
 	t = build_sample_transactions('2017-01-01', '2017-12-31')
 
 	s = summarize(t)
-	default_cols = ['date', 'credit', 'debit', 'balance', 'period_savings_rate']
+	default_cols = ['date', 'credit', 'debit', 'balance', 'period_savings_rate',
+	  'period_spending_rate']
 	assert set(s.columns) == set(default_cols)
 	assert s.shape[0] == 1
 
@@ -51,30 +61,9 @@ def test_summarize():
 	ncats = t.category.nunique()
 	assert s.shape[0] == ncats
 
-	s = summarize(t, budget_and_freq=(100, 'W'))
-	budget_cols = default_cols + ['period_budget']
-	assert set(s.columns) == set(budget_cols)
-	assert s.shape[0] == 1
-	assert s['period_budget'].iat[0] == 100*365/7
-
 	s = summarize(t, freq='MS', by_category=True)
 	assert set(s.columns) == set(cat_cols)
 	assert s.shape[0] == ncats*12
-
-	s = summarize(t, freq='MS', budget_and_freq=(100, 'W'))
-	assert set(s.columns) == set(budget_cols)
-	assert s.shape[0] == 12
-	assert s['period_budget'].iat[0] == 100*(31/7)
-
-	s = summarize(t, by_category=True, budget_and_freq=(100, 'W'))
-	assert set(s.columns) == set(budget_cols + cat_cols)
-	assert s.shape[0] == ncats
-	assert s['period_budget'].iat[0] == 100*(365/7)
-
-	s = summarize(t, freq='MS', by_category=True, budget_and_freq=(100, 'W'))
-	assert set(s.columns) == set(budget_cols + cat_cols)
-	assert s.shape[0] == 12*ncats
-	assert s['period_budget'].iat[0] == 100*(31/7)
 
 def test_get_colors():
 	n = 300
@@ -84,3 +73,11 @@ def test_get_colors():
 
 	with pytest.raises(ValueError):
 		c = get_colors('bingo', n)
+
+def test_plot():
+	t = build_sample_transactions('2017-01-01', '2017-12-31')
+
+	for freq, by_category in product([None, 'W'], [True, False]):		
+		s = summarize(t, freq=freq, by_category=by_category)
+		p = plot(s)
+		assert isinstance(p, highcharts.highcharts.highcharts.Highchart)
