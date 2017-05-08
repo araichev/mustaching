@@ -41,6 +41,7 @@ def test_insert_repeating():
 	f = insert_repeating(t, -100, 'MS', desc)
 	assert f.shape[0] == t.shape[0] + 3
 	assert f['amount'].sum() == t['amount'].sum() - 300
+	assert f['category'].dtype == 'category'
 	
 def test_summarize():
 	t = build_sample_transactions('2017-01-01', '2017-12-31')

@@ -9,7 +9,7 @@ with open('LICENSE.txt') as f:
 
 setup(
     name='mustaching',
-    version='2.0.1',
+    version='2.1.0',
     author='Alex Raichev',
     url='https://github.com/araichev/mustaching',
     data_files = [('', ['LICENSE.txt'])],

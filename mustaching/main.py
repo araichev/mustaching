@@ -22,7 +22,7 @@ REQUIRED_COLUMNS = {'date', 'amount'}
 def build_sample_transactions(date1, date2, freq='12H',
   credit_categories=None, debit_categories=None):
     """
-    Create a DataFrame of sample transactions between the given dates (date strings that Pandas can interpret) and at the given Pandas frequency.
+    Create a DataFrame of sample transactions between the given dates (date strings that Pandas can interpret, such as YYYYMMDD) and at the given Pandas frequency.
     Include all the columns in the set ``COLUMNS``.
     Each positive transaction will be assigned a credit category from the given list ``credit_categories``, and each negative transaction will be assigned a debit category from the given list ``debit_categories``.
     If these lists are not given, then whimsical default ones will be created.
@@ -135,7 +135,9 @@ def insert_repeating(transactions, amount, freq,
         g['comment'] = comment
 
     h = pd.concat([f, g]).drop_duplicates().sort_values(['date', 'amount'])
-
+    if 'category' in h.columns:
+        h['category'] = h['category'].astype('category')
+        
     return h
 
 def get_duration(date, freq):
@@ -148,10 +150,10 @@ def get_duration(date, freq):
     dr = pd.date_range(date, freq=freq, periods=2)
     return dr[1] - dr[0]
 
-# TODO: add period_debit_frac column
-def summarize(transactions, freq=None, by_category=False, decimals=None):
+def summarize(transactions, freq=None, by_category=False, decimals=None,
+  start_date=None, end_date=None):
     """
-    Given a DataFrame of transactions, return a DataFrame with the columns:
+    Given a DataFrame of transactions, slice it to the given start date and end date (date strings that Pandas can interpret, such as YYYYMMDD) if specified, and return a DataFrame with the columns:
 
     - ``'date'``: start date of period
     - ``'credit'``: sum of positive amounts for the period
@@ -170,6 +172,13 @@ def summarize(transactions, freq=None, by_category=False, decimals=None):
     f = transactions.copy()
     if by_category and 'category' not in f.columns:
         raise ValueError('category column missing from DataFrame')
+
+    if start_date is not None:
+        start_date = pd.to_datetime(start_date)
+        f = f[f['date'] >= start_date].copy()
+    if end_date is not None:
+        end_date = pd.to_datetime(end_date)
+        f = f[f['date'] <= end_date].copy()
 
     f['credit'] = f['amount'].map(lambda x: x if x > 0 else 0)
     f['debit'] = f['amount'].map(lambda x: -x if x < 0 else 0)
