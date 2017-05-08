@@ -4,17 +4,18 @@ from setuptools import setup, find_packages
 with open('README.rst') as f:
     readme = f.read()
 
-with open('LICENSE') as f:
+with open('LICENSE.txt') as f:
     license = f.read()
 
 setup(
     name='mustaching',
-    version='2.0.0',
+    version='2.1.0',
     author='Alex Raichev',
     url='https://github.com/araichev/mustaching',
-    license=license,
+    data_files = [('', ['LICENSE.txt'])],
     description='A Python 3.4+ package for Mr. Money Mustaching',
     long_description=readme,
+    license=license,
     install_requires=[
         'pandas>=0.19',
         'python-highcharts>=0.3.1',

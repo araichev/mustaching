@@ -42,7 +42,7 @@
           <div class="body" role="main">
             
   <div class="section" id="mustaching-version-documentation">
-<h1>mustaching 2.0 Documentation<a class="headerlink" href="#mustaching-version-documentation" title="Permalink to this headline">¶</a></h1>
+<h1>mustaching 2.1 Documentation<a class="headerlink" href="#mustaching-version-documentation" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 <span id="document-introduction"></span><div class="section" id="introduction">
 <h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
@@ -101,7 +101,7 @@ You can even upload your own transaction data into the notebook, but consider fi
 <dl class="function">
 <dt id="mustaching.main.build_sample_transactions">
 <code class="descclassname">mustaching.main.</code><code class="descname">build_sample_transactions</code><span class="sig-paren">(</span><em>date1</em>, <em>date2</em>, <em>freq='12H'</em>, <em>credit_categories=None</em>, <em>debit_categories=None</em><span class="sig-paren">)</span><a class="headerlink" href="#mustaching.main.build_sample_transactions" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a DataFrame of sample transactions between the given dates (date strings that Pandas can interpret) and at the given Pandas frequency.
+<dd><p>Create a DataFrame of sample transactions between the given dates (date strings that Pandas can interpret, such as YYYYMMDD) and at the given Pandas frequency.
 Include all the columns in the set <code class="docutils literal"><span class="pre">COLUMNS</span></code>.
 Each positive transaction will be assigned a credit category from the given list <code class="docutils literal"><span class="pre">credit_categories</span></code>, and each negative transaction will be assigned a debit category from the given list <code class="docutils literal"><span class="pre">debit_categories</span></code>.
 If these lists are not given, then whimsical default ones will be created.</p>
@@ -173,8 +173,8 @@ Override the default chart width and height, if you wish.</p>
 
 <dl class="function">
 <dt id="mustaching.main.summarize">
-<code class="descclassname">mustaching.main.</code><code class="descname">summarize</code><span class="sig-paren">(</span><em>transactions</em>, <em>freq=None</em>, <em>by_category=False</em>, <em>decimals=None</em><span class="sig-paren">)</span><a class="headerlink" href="#mustaching.main.summarize" title="Permalink to this definition">¶</a></dt>
-<dd><p>Given a DataFrame of transactions, return a DataFrame with the columns:</p>
+<code class="descclassname">mustaching.main.</code><code class="descname">summarize</code><span class="sig-paren">(</span><em>transactions</em>, <em>freq=None</em>, <em>by_category=False</em>, <em>decimals=None</em>, <em>start_date=None</em>, <em>end_date=None</em><span class="sig-paren">)</span><a class="headerlink" href="#mustaching.main.summarize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a DataFrame of transactions, slice it to the given start date and end date (date strings that Pandas can interpret, such as YYYYMMDD) if specified, and return a DataFrame with the columns:</p>
 <ul class="simple">
 <li><code class="docutils literal"><span class="pre">'date'</span></code>: start date of period</li>
 <li><code class="docutils literal"><span class="pre">'credit'</span></code>: sum of positive amounts for the period</li>

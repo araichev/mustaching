@@ -47,6 +47,17 @@ Authors
 History
 ========
 
+2.1.0, 2017-05-07
+------------------
+- Fixed a bug in ``main.insert_repeating`` that lost the categorical dtype
+- Added optional slicing by date in ``main.summarize``
+
+
+2.0.1, 2017-04-26
+-------------------
+- Fixed the bug where ``setup.py`` could not find the license file
+
+
 2.0.0, 2017-04-25
 -----------------
 - Removed ``budget_and_freq`` option, because i don't need that extra complexity
