@@ -153,7 +153,7 @@ def get_duration(date, freq):
 def summarize(transactions, freq=None, by_category=False, decimals=None,
   start_date=None, end_date=None):
     """
-    Given a DataFrame of transactions, slice it to the given start date and end date (date strings that Pandas can interpret, such as YYYYMMDD) if specified, and return a DataFrame with the columns:
+    Given a DataFrame of transactions, slice it from the given start date to and including the given end date date (strings that Pandas can interpret, such as YYYYMMDD) if specified, and return a DataFrame with the columns:
 
     - ``'date'``: start date of period
     - ``'credit'``: sum of positive amounts for the period
