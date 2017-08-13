@@ -1,7 +1,7 @@
 Mustaching
 ***********
 
-.. image:: http://mybinder.org/badge.svg 
+.. image:: http://mybinder.org/badge.svg
     :target: http://mybinder.org:/repo/araichev/mustaching
 
 .. image:: https://travis-ci.org/araichev/mustaching.svg?branch=master
@@ -22,10 +22,10 @@ Your CSV of transactions should contain at least the following columns
 - ``'date'``: string; something consistent and recognizable by Pandas, e.g 2016-11-26
 - ``'amount'``: float; amount of transaction; positive or negative, indicating a credit or debit, respectively
 - ``'description'`` (optional): string; description of transaction, e.g. 'dandelion and burdock tea'
-- ``'category'`` (optional): string; categorization of description, e.g. 'healthcare' 
+- ``'category'`` (optional): string; categorization of description, e.g. 'healthcare'
 - ``'comment'`` (optional): string; comment on transaction, e.g. 'a gram of prevention is worth 16 grams of cure'
 
-The business logic can be found in ``budgeting/main.py``
+The business logic can be found in ``mustaching/main.py``
 
 
 Documentation
@@ -46,6 +46,11 @@ Authors
 
 History
 ========
+
+2.2.0, ?
+------------------
+- Changed ``main.summarize`` to split savings rate by category
+
 
 2.1.0, 2017-05-07
 ------------------

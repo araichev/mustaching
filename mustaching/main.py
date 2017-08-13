@@ -8,7 +8,6 @@ CONVENTIONS:
         * comment (optional): string
 """
 import random
-import datetime as dt
 
 import pandas as pd
 import numpy as np
@@ -22,10 +21,16 @@ REQUIRED_COLUMNS = {'date', 'amount'}
 def build_sample_transactions(date1, date2, freq='12H',
   credit_categories=None, debit_categories=None):
     """
-    Create a DataFrame of sample transactions between the given dates (date strings that Pandas can interpret, such as YYYYMMDD) and at the given Pandas frequency.
+    Create a DataFrame of sample transactions between the given dates
+    (date strings that Pandas can interpret, such as YYYYMMDD) and at
+    the given Pandas frequency.
     Include all the columns in the set ``COLUMNS``.
-    Each positive transaction will be assigned a credit category from the given list ``credit_categories``, and each negative transaction will be assigned a debit category from the given list ``debit_categories``.
-    If these lists are not given, then whimsical default ones will be created.
+    Each positive transaction will be assigned a credit category from
+    the given list ``credit_categories``, and each negative transaction
+    will be assigned a debit category from the given list
+    ``debit_categories``.
+    If these lists are not given, then whimsical default ones will be
+    created.
     """
     # Create date range
     rng = pd.date_range(date1, date2, freq=freq, name='date')
@@ -46,7 +51,8 @@ def build_sample_transactions(date1, date2, freq='12H',
     if credit_categories is None:
         credit_categories = ['yoga', 'reiki', 'thieving']
     if debit_categories is None:
-        debit_categories = ['food', 'housing', 'transport', 'healthcare', 'soil testing']
+        debit_categories = ['food', 'housing', 'transport', 'healthcare',
+          'soil testing']
 
     def categorize(x):
         if x > 0:
@@ -61,10 +67,12 @@ def build_sample_transactions(date1, date2, freq='12H',
 
 def find_columns(raw_transactions):
     """
-    Given a DataFrame, lowercase the column names and search for the columns in ``COLUMNS``.
+    Given a DataFrame, lowercase the column names and search for the
+    columns in ``COLUMNS``.
     Build a dictionary of the form
     name in ``COLUMNS`` -> name in given DataFrame
-    and return the result, which might not contain all the ``COLUMNS`` keys.
+    and return the result, which might not contain all the ``COLUMNS``
+    keys.
     """
     f = raw_transactions.copy()
     col_dict = {}
@@ -76,17 +84,25 @@ def find_columns(raw_transactions):
 
 def read_transactions(path, date_format=None, **kwargs):
     """
-    Read a CSV file of transactions located at the given path (string or Path object), parse the date and category, and return the resulting DataFrame.
+    Read a CSV file of transactions located at the given path (string
+    or Path object), parse the date and category, and return the
+    resulting DataFrame.
 
     The CSV should contain at least the following columns
 
     - ``'date'``: string
-    - ``'amount'``: float; amount of transaction; positive or negative, indicating a credit or debit, respectively
-    - ``'description'`` (optional): string; description of transaction, e.g. 'dandelion and burdock tea'
-    - ``'category'`` (optional): string; categorization of description, e.g. 'healthcare'
-    - ``'comment'`` (optional): string; comment on transaction, e.g. 'a gram of prevention is worth 62.5 grams of cure'
+    - ``'amount'``: float; amount of transaction; positive or negative,
+      indicating a credit or debit, respectively
+    - ``'description'`` (optional): string; description of transaction,
+      e.g. 'dandelion and burdock tea'
+    - ``'category'`` (optional): string; categorization of description,
+      e.g. 'healthcare'
+    - ``'comment'`` (optional): string; comment on transaction, e.g.
+      'a gram of prevention is worth 62.5 grams of cure'
 
-    If the date format string ``date_format`` is given,  e.g ``'%Y-%m-%d'``, then parse dates using that format; otherwise use let Pandas guess the date format.
+    If the date format string ``date_format`` is given,  e.g
+    ``'%Y-%m-%d'``, then parse dates using that format; otherwise use
+    let Pandas guess the date format.
     """
     f = pd.read_csv(path, **kwargs)
     col_dict = find_columns(f)
@@ -109,10 +125,15 @@ def read_transactions(path, date_format=None, **kwargs):
     return f.sort_values(['date', 'amount'])
 
 def insert_repeating(transactions, amount, freq,
-  description=None, category=None, comment=None, start_date=None, end_date=None):
+  description=None, category=None, comment=None,
+  start_date=None, end_date=None):
     """
-    Given a DataFrame of transactions, add to it a repeating transaction at the given frequency for the given amount with the given optional description, category, and comment.
-    Restrict the repeating transaction to the given start and end dates (date objects), if given; otherwise repeat from the first transaction date to the last.
+    Given a DataFrame of transactions, add to it a repeating transaction
+    at the given frequency for the given amount with the given optional
+    description, category, and comment.
+    Restrict the repeating transaction to the given start and end dates
+    (date objects), inclusive, if given; otherwise repeat from the first
+    transaction date to the last.
     Drop duplicate rows and return the resulting DataFrame.
     """
     f = transactions.copy()
@@ -137,12 +158,13 @@ def insert_repeating(transactions, amount, freq,
     h = pd.concat([f, g]).drop_duplicates().sort_values(['date', 'amount'])
     if 'category' in h.columns:
         h['category'] = h['category'].astype('category')
-        
+
     return h
 
 def get_duration(date, freq):
     """
-    Return the duration of the period starting at the given date and spanning the given frequency.
+    Return the duration of the period starting at the given date and
+    spanning the given frequency.
 
     NOTES:
         Could not find a Pandas function to do this for me.
@@ -153,19 +175,28 @@ def get_duration(date, freq):
 def summarize(transactions, freq=None, by_category=False, decimals=None,
   start_date=None, end_date=None):
     """
-    Given a DataFrame of transactions, slice it from the given start date to and including the given end date date (strings that Pandas can interpret, such as YYYYMMDD) if specified, and return a DataFrame with the columns:
+    Given a DataFrame of transactions, slice it from the given start
+    date to and including the given end date date (strings that Pandas
+    can interpret, such as YYYYMMDD) if specified, and return a
+    DataFrame with the columns:
 
     - ``'date'``: start date of period
     - ``'credit'``: sum of positive amounts for the period
-    - ``'debit'``: absolute value of the sum of the negative amounts for the period
+    - ``'debit'``: absolute value of the sum of negative amounts
+      for the period
     - ``'balance'``: credit - debit cumulative sum
-    - ``'period_savings_rate'``: (credit - debit)/credit, ignoring categories
-    - ``'period_spending_rate'``: debit/credit, splitting by category
+    - ``'period_savings_rate'``: (credit/(credit sum))*
+      (credit sum - debit sum)/(credit sum)
+    - ``'period_spending_rate'``: debit/(credit sum)
 
     The period is given by the Pandas frequency string ``freq``.
-    If that frequency is ``None``, then there is only one period, namely one that runs from the first to the last date in ``transactions`` (ordered chronologically); the ``'date'`` value is then the first date.
+    If that frequency is ``None``, then there is only one period,
+    namely one that runs from the first to the last date in
+    ``transactions`` (ordered chronologically);
+    the ``'date'`` value is then the first date.
 
-    If ``by_category``, then group by the ``'category'`` column of ``transactions`` in addition to the period.
+    If ``by_category``, then group by the ``'category'`` column of
+    ``transactions`` in addition to the period.
 
     Round all values to the given number of decimals.
     """
@@ -187,7 +218,8 @@ def summarize(transactions, freq=None, by_category=False, decimals=None,
         if by_category:
             g = f.groupby('category').sum().reset_index()
             g['balance'] = g['credit'].sum() - g['debit'].sum()
-            g['period_savings_rate'] = g['balance']/g['credit'].sum()
+            g['period_savings_rate'] = (g['credit']/g['credit'].sum())*\
+              g['balance']/g['credit'].sum()
             g['period_spending_rate'] = g['debit']/g['credit'].sum()
         else:
             g = {}
@@ -207,19 +239,21 @@ def summarize(transactions, freq=None, by_category=False, decimals=None,
             g = f.set_index('date').groupby(cols).sum().reset_index()
             balance = 0
             balances = []
-            psrs = []
-            pprs = []
+            save_rates = []
+            spend_rates = []
             for __, group in g.set_index('date').groupby(tg):
                 n = group.shape[0]
                 balance += (group['credit'] - group['debit']).sum()
                 balances.extend([balance for i in range(n)])
-                psr = (group['credit'] - group['debit']).sum()/\
+                save_rate = (group['credit']/group['credit'].sum())*\
+                  (group['credit'] - group['debit']).sum()/\
                   group['credit'].sum()
-                psrs.extend([psr for i in range(n)])
-                pprs.extend((group['debit']/group['credit'].sum()).values)
+                save_rates.extend(save_rate.values)
+                spend_rate = group['debit']/group['credit'].sum()
+                spend_rates.extend(spend_rate.values)
             g['balance'] = balances
-            g['period_savings_rate'] = psrs
-            g['period_spending_rate'] = pprs
+            g['period_savings_rate'] = save_rates
+            g['period_spending_rate'] = spend_rates
         else:
             g = f.set_index('date').groupby(tg).sum().reset_index()
             g['balance'] = (g['credit'] - g['debit']).cumsum()
@@ -240,7 +274,9 @@ def summarize(transactions, freq=None, by_category=False, decimals=None,
 
 def get_colors(column_name, n):
     """
-    Return a list of ``n`` (positive integer) nice RGB color strings to use for color coding the given column (string; one of ``['credit', 'debit', 'period_budget', 'balance']``.
+    Return a list of ``n`` (positive integer) nice RGB color strings
+    to use for color coding the given column (string; one of
+    ``['credit', 'debit', 'period_budget', 'balance']``.
 
     NOTES:
         - Returns at most 6 distinct colors. Repeats color beyond that.
@@ -279,15 +315,17 @@ def get_colors(column_name, n):
 
 def plot(summary, currency=None, width=None, height=None):
     """
-    Plot the given transaction summary (output of :func:`summarize`) using Python HighCharts.
-    Include the given currency units (string; e.g. 'NZD') in the y-axis label.
+    Plot the given transaction summary (output of :func:`summarize`)
+    using Python HighCharts.
+    Include the given currency units (string; e.g. 'NZD') in the y-axis
+    label.
     Override the default chart width and height, if you wish.
     """
     f = summary.copy()
     chart = Highchart()
 
     # HighCharts kludge: use categorical x-axis to display dates properly
-    dates = f['date'].map(lambda x:x.strftime('%Y-%m-%d')).unique()
+    dates = f['date'].map(lambda x: x.strftime('%Y-%m-%d')).unique()
     dates = sorted(dates.tolist())
 
     if currency is not None:
@@ -300,7 +338,7 @@ def plot(summary, currency=None, width=None, height=None):
         'lang': {
             'thousandsSep': ','
         },
-        'chart' : {
+        'chart': {
             'zoomType': 'xy',
         },
         'title': {
