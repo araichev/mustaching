@@ -49,13 +49,14 @@ History
 
 2.2.0, ?
 ------------------
-- Changed ``main.summarize`` to split savings rate by category
+- Changed function ``summarize`` to split savings rate by category and to include weekly and daily averages when no frequency is givin
+- Fixed an edge-case division-by-zero bug in function ``summarize``
 
 
 2.1.0, 2017-05-07
 ------------------
-- Fixed a bug in ``main.insert_repeating`` that lost the categorical dtype
-- Added optional slicing by date in ``main.summarize``
+- Fixed a bug in function ``insert_repeating`` that lost the categorical dtype
+- Added optional slicing by date in function ``summarize``
 
 
 2.0.1, 2017-04-26
@@ -67,7 +68,7 @@ History
 -----------------
 - Removed ``budget_and_freq`` option, because i don't need that extra complexity
 - Calculated spending rate
-- Added ``insert_repeating()`` to avoid having to record repeating transactions in my personal spendings
+- Added function ``insert_repeating`` to avoid having to record repeating transactions in my personal spendings
 - Prepared for PyPi
 
 
@@ -87,8 +88,8 @@ History
 
 1.1.0, 2016-12-13
 ------------------
-- Made ``read_ransactions()`` infer column names a little
-- Made ``summarize()`` always create ``'period_budget'`` column and fill it with NaNs if no budget given
+- Made function ``read_ransactions`` infer column names a little
+- Made funnction ``summarize`` always create ``'period_budget'`` column and fill it with NaNs if no budget given
 
 
 1.0.0, 2016-12-10

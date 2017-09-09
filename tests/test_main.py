@@ -45,25 +45,28 @@ def test_insert_repeating():
 
 def test_summarize():
     t = build_sample_transactions('2017-01-01', '2017-12-31')
-
-    s = summarize(t)
     default_cols = ['date', 'credit', 'debit', 'balance',
       'period_savings_rate', 'period_spending_rate']
-    assert set(s.columns) == set(default_cols)
+
+    s = summarize(t)
+    expect_cols = default_cols + ['weekly_avg', 'daily_avg']
+    assert set(s.columns) == set(expect_cols)
     assert s.shape[0] == 1
 
     s = summarize(t, freq='MS')
-    assert set(s.columns) == set(default_cols)
+    expect_cols = default_cols
+    assert set(s.columns) == set(expect_cols)
     assert s.shape[0] == 12
 
     s = summarize(t, by_category=True)
-    cat_cols = default_cols + ['category']
-    assert set(s.columns) == set(cat_cols)
+    expect_cols = default_cols + ['category', 'weekly_avg', 'daily_avg']
+    assert set(s.columns) == set(expect_cols)
     ncats = t.category.nunique()
     assert s.shape[0] == ncats
 
     s = summarize(t, freq='MS', by_category=True)
-    assert set(s.columns) == set(cat_cols)
+    expect_cols = default_cols + ['category']
+    assert set(s.columns) == set(expect_cols)
     assert s.shape[0] == ncats*12
 
 def test_get_colors():
@@ -77,7 +80,6 @@ def test_get_colors():
 
 def test_plot():
     t = build_sample_transactions('2017-01-01', '2017-12-31')
-
     for freq, by_category in product([None, 'W'], [True, False]):
         s = summarize(t, freq=freq, by_category=by_category)
         p = plot(s)

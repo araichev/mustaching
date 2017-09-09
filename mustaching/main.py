@@ -188,6 +188,10 @@ def summarize(transactions, freq=None, by_category=False, decimals=None,
     - ``'period_savings_rate'``: (credit/(credit sum))*
       (credit sum - debit sum)/(credit sum)
     - ``'period_spending_rate'``: debit/(credit sum)
+    - ``'weekly_avg'``: only if ``freq is None``; debit + credit
+      divided by number of weeks between start and end date
+    - ``'daily_avg'``: only if ``freq is None``; debit + credit
+      divided by number of days between start and end date
 
     The period is given by the Pandas frequency string ``freq``.
     If that frequency is ``None``, then there is only one period,
@@ -204,12 +208,20 @@ def summarize(transactions, freq=None, by_category=False, decimals=None,
     if by_category and 'category' not in f.columns:
         raise ValueError('category column missing from DataFrame')
 
-    if start_date is not None:
+    # Set start and end dates
+    if start_date is None:
+        start_date = f['date'].min()
+    else:
         start_date = pd.to_datetime(start_date)
-        f = f[f['date'] >= start_date].copy()
-    if end_date is not None:
+    if end_date is None:
+        end_date = f['date'].max()
+    else:
         end_date = pd.to_datetime(end_date)
-        f = f[f['date'] <= end_date].copy()
+
+    # Filter to start and end dates
+    cond = (f['date'] >= start_date)\
+      & (f['date'] <= end_date)
+    f = f[cond].copy()
 
     f['credit'] = f['amount'].map(lambda x: x if x > 0 else 0)
     f['debit'] = f['amount'].map(lambda x: -x if x < 0 else 0)
@@ -226,12 +238,28 @@ def summarize(transactions, freq=None, by_category=False, decimals=None,
             g['credit'] = f['credit'].sum()
             g['debit'] = f['debit'].sum()
             g['balance'] = g['credit'] - g['debit']
-            g['period_savings_rate'] = g['balance']/g['credit'].sum()
-            g['period_spending_rate'] = g['debit']/g['credit'].sum()
+            if g['credit']:
+                g['period_savings_rate'] = g['balance']/g['credit']
+                g['period_spending_rate'] = g['debit']/g['credit']
+            else:
+                g['period_savings_rate'] = np.nan
+                g['period_spending_rate'] = np.nan
             g = pd.DataFrame(g, index=[0])
 
-        # Add in first transaction date
-        g['date'] = f['date'].min()
+        # Append first transaction date
+        g['date'] = start_date
+
+        # Also apeend weekly and daily averages
+        delta = end_date - start_date
+        num_days = delta.days + 1
+        num_weeks = num_days/7
+        g['weekly_avg'] = (g['credit'] + g['debit'])/num_weeks
+        g['daily_avg'] = (g['credit'] + g['debit'])/num_days
+
+        new_cols = ['date', 'credit', 'debit', 'balance',
+          'period_savings_rate', 'period_spending_rate',
+          'weekly_avg', 'daily_avg']
+
     else:
         tg = pd.TimeGrouper(freq, label='left', closed='left')
         if by_category:
@@ -260,13 +288,18 @@ def summarize(transactions, freq=None, by_category=False, decimals=None,
             g['period_savings_rate'] = (g['credit'] - g['debit'])/g['credit']
             g['period_spending_rate'] = g['debit']/g['credit']
 
-    keep_cols = ['date', 'credit', 'debit', 'balance', 'period_savings_rate',
-      'period_spending_rate']
+        new_cols = ['date', 'credit', 'debit', 'balance',
+          'period_savings_rate', 'period_spending_rate']
+
+    # Select desired columns
     if by_category:
-        keep_cols.insert(4, 'category')
+        new_cols.insert(4, 'category')
+    g = g[new_cols].copy()
 
-    g = g[keep_cols].copy()
+    # Replace infinities with nans
+    g = g.replace(np.inf, np.nan)
 
+    # Round
     if decimals is not None:
         g = g.round(decimals)
 
@@ -315,11 +348,11 @@ def get_colors(column_name, n):
 
 def plot(summary, currency=None, width=None, height=None):
     """
-    Plot the given transaction summary (output of :func:`summarize`)
-    using Python HighCharts.
+    Given a transaction summary of the form output by :func:`summarize`,
+    plot it using Python HighCharts.
     Include the given currency units (string; e.g. 'NZD') in the y-axis
     label.
-    Override the default chart width and height, if you wish.
+    Override the default chart width and height, if desired.
     """
     f = summary.copy()
     chart = Highchart()
