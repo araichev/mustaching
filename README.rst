@@ -1,7 +1,7 @@
 Mustaching
 ***********
 
-.. image:: http://mybinder.org/badge.svg 
+.. image:: http://mybinder.org/badge.svg
     :target: http://mybinder.org:/repo/araichev/mustaching
 
 .. image:: https://travis-ci.org/araichev/mustaching.svg?branch=master
@@ -9,6 +9,11 @@ Mustaching
 
 A Python 3.4+ package inspired by Mr. Money Mustache to summarize and plot personal finance data given in a CSV file.
 Uses Pandas and Python-Highcharts to do most of the work.
+
+
+Installation
+=============
+``pip install git+https://github.com/araichev/mustaching``
 
 
 Usage
@@ -22,10 +27,10 @@ Your CSV of transactions should contain at least the following columns
 - ``'date'``: string; something consistent and recognizable by Pandas, e.g 2016-11-26
 - ``'amount'``: float; amount of transaction; positive or negative, indicating a credit or debit, respectively
 - ``'description'`` (optional): string; description of transaction, e.g. 'dandelion and burdock tea'
-- ``'category'`` (optional): string; categorization of description, e.g. 'healthcare' 
+- ``'category'`` (optional): string; categorization of description, e.g. 'healthcare'
 - ``'comment'`` (optional): string; comment on transaction, e.g. 'a gram of prevention is worth 16 grams of cure'
 
-The business logic can be found in ``budgeting/main.py``
+The business logic can be found in ``mustaching/main.py``
 
 
 Documentation
@@ -36,7 +41,7 @@ In docs and `on RawGit <https://rawgit.com/araichev/mustaching/master/docs/_buil
 Notes
 ========
 - Development status: Alpha
-- This project uses semantic versioning (major.minor.micro), where each breaking feature or API change is considered a major change
+- This project uses semantic versioning
 
 
 Authors
@@ -47,10 +52,16 @@ Authors
 History
 ========
 
+2.2.0, 2017-09-25
+------------------
+- Changed function ``summarize`` to split savings rate by category and to include weekly and daily averages when no frequency is given
+- Fixed an edge-case division-by-zero bug in function ``summarize``
+
+
 2.1.0, 2017-05-07
 ------------------
-- Fixed a bug in ``main.insert_repeating`` that lost the categorical dtype
-- Added optional slicing by date in ``main.summarize``
+- Fixed a bug in function ``insert_repeating`` that lost the categorical dtype
+- Added optional slicing by date in function ``summarize``
 
 
 2.0.1, 2017-04-26
@@ -62,7 +73,7 @@ History
 -----------------
 - Removed ``budget_and_freq`` option, because i don't need that extra complexity
 - Calculated spending rate
-- Added ``insert_repeating()`` to avoid having to record repeating transactions in my personal spendings
+- Added function ``insert_repeating`` to avoid having to record repeating transactions in my personal spendings
 - Prepared for PyPi
 
 
@@ -82,8 +93,8 @@ History
 
 1.1.0, 2016-12-13
 ------------------
-- Made ``read_ransactions()`` infer column names a little
-- Made ``summarize()`` always create ``'period_budget'`` column and fill it with NaNs if no budget given
+- Made function ``read_ransactions`` infer column names a little
+- Made funnction ``summarize`` always create ``'period_budget'`` column and fill it with NaNs if no budget given
 
 
 1.0.0, 2016-12-10
