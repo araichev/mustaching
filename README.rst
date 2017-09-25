@@ -11,6 +11,11 @@ A Python 3.4+ package inspired by Mr. Money Mustache to summarize and plot perso
 Uses Pandas and Python-Highcharts to do most of the work.
 
 
+Installation
+=============
+``pip install git+https://github.com/araichev/mustaching``
+
+
 Usage
 =========
 Play with the IPython notebook ``ipynb/examples.ipynb``.
@@ -36,7 +41,7 @@ In docs and `on RawGit <https://rawgit.com/araichev/mustaching/master/docs/_buil
 Notes
 ========
 - Development status: Alpha
-- This project uses semantic versioning (major.minor.micro), where each breaking feature or API change is considered a major change
+- This project uses semantic versioning
 
 
 Authors
@@ -47,9 +52,9 @@ Authors
 History
 ========
 
-2.2.0, ?
+2.2.0, 2017-09-25
 ------------------
-- Changed function ``summarize`` to split savings rate by category and to include weekly and daily averages when no frequency is givin
+- Changed function ``summarize`` to split savings rate by category and to include weekly and daily averages when no frequency is given
 - Fixed an edge-case division-by-zero bug in function ``summarize``
 
 

@@ -22,6 +22,8 @@ import shlex
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath('../'))
 
+import mustaching
+
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -59,7 +61,8 @@ author = 'Alex Raichev'
 # built documents.
 #
 # The short X.Y version.
-version = '2.1'
+version = mustaching.__version__
+
 # The full version, including alpha/beta/rc tags.
 #release = '4.0'
 
