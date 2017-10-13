@@ -42,7 +42,7 @@
           <div class="body" role="main">
             
   <div class="section" id="mustaching-version-documentation">
-<h1>mustaching 2.2.0 Documentation<a class="headerlink" href="#mustaching-version-documentation" title="Permalink to this headline">¶</a></h1>
+<h1>mustaching 2.2.1 Documentation<a class="headerlink" href="#mustaching-version-documentation" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 <span id="document-introduction"></span><div class="section" id="introduction">
 <h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
@@ -217,9 +217,9 @@ for the period</li>
 <li><code class="docutils literal"><span class="pre">'period_savings_rate'</span></code>: (credit/(credit sum))*
 (credit sum - debit sum)/(credit sum)</li>
 <li><code class="docutils literal"><span class="pre">'period_spending_rate'</span></code>: debit/(credit sum)</li>
-<li><code class="docutils literal"><span class="pre">'weekly_avg'</span></code>: only if <code class="docutils literal"><span class="pre">freq</span> <span class="pre">is</span> <span class="pre">None</span></code>; debit + credit
+<li><code class="docutils literal"><span class="pre">'weekly_avg'</span></code>: only if <code class="docutils literal"><span class="pre">freq</span> <span class="pre">is</span> <span class="pre">None</span></code>; credit - debit
 divided by number of weeks between start and end date</li>
-<li><code class="docutils literal"><span class="pre">'daily_avg'</span></code>: only if <code class="docutils literal"><span class="pre">freq</span> <span class="pre">is</span> <span class="pre">None</span></code>; debit + credit
+<li><code class="docutils literal"><span class="pre">'daily_avg'</span></code>: only if <code class="docutils literal"><span class="pre">freq</span> <span class="pre">is</span> <span class="pre">None</span></code>; credit - debit
 divided by number of days between start and end date</li>
 </ul>
 <p>The period is given by the Pandas frequency string <code class="docutils literal"><span class="pre">freq</span></code>.
