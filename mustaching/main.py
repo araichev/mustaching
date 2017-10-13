@@ -188,9 +188,9 @@ def summarize(transactions, freq=None, by_category=False, decimals=None,
     - ``'period_savings_rate'``: (credit/(credit sum))*
       (credit sum - debit sum)/(credit sum)
     - ``'period_spending_rate'``: debit/(credit sum)
-    - ``'weekly_avg'``: only if ``freq is None``; debit + credit
+    - ``'weekly_avg'``: only if ``freq is None``; credit - debit
       divided by number of weeks between start and end date
-    - ``'daily_avg'``: only if ``freq is None``; debit + credit
+    - ``'daily_avg'``: only if ``freq is None``; credit - debit
       divided by number of days between start and end date
 
     The period is given by the Pandas frequency string ``freq``.
@@ -253,8 +253,8 @@ def summarize(transactions, freq=None, by_category=False, decimals=None,
         delta = end_date - start_date
         num_days = delta.days + 1
         num_weeks = num_days/7
-        g['weekly_avg'] = (g['credit'] + g['debit'])/num_weeks
-        g['daily_avg'] = (g['credit'] + g['debit'])/num_days
+        g['weekly_avg'] = (g['credit'] - g['debit'])/num_weeks
+        g['daily_avg'] = (g['credit'] - g['debit'])/num_days
 
         new_cols = ['date', 'credit', 'debit', 'balance',
           'period_savings_rate', 'period_spending_rate',
@@ -297,7 +297,9 @@ def summarize(transactions, freq=None, by_category=False, decimals=None,
     g = g[new_cols].copy()
 
     # Replace infinities with nans
-    g = g.replace(np.inf, np.nan)
+    g = g.replace(np.inf, np.nan).sort_values(
+      ['date', 'period_spending_rate', 'period_savings_rate'],
+      ascending=[True, True, False])
 
     # Round
     if decimals is not None:

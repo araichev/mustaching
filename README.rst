@@ -52,6 +52,11 @@ Authors
 History
 ========
 
+2.2.1, 2017-10-14
+------------------
+- In function ``summarize``, changed weekly and daily averages calculations to use credit - debit. Also changed default sort order of DataFrame output.
+
+
 2.2.0, 2017-09-25
 ------------------
 - Changed function ``summarize`` to split savings rate by category and to include weekly and daily averages when no frequency is given
