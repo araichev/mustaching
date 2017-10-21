@@ -10,6 +10,8 @@ Mustaching
 A Python 3.4+ package inspired by Mr. Money Mustache to summarize and plot personal finance data given in a CSV file.
 Uses Pandas and Python-Highcharts to do most of the work.
 
+.. image:: mustaching.jpeg
+
 
 Installation
 =============
