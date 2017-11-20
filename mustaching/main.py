@@ -423,13 +423,29 @@ def plot(summary, currency=None, width=None, height=None):
           '''
         options['tooltip']['footerFormat'] = '''
           <tr>
-          <td style="padding-right:1em">Total</td>
+          <td style="padding-right:1em">Column total</td>
           <td style="text-align:right">{point.total:,.0f} ''' + currency +\
           '''
           </td>
           </tr></table>
           '''
         options['tooltip']['shared'] = False
+
+        # Aggregate balance
+        def my_agg(group):
+            d = {}
+            d['balance'] = group['balance'].iat[0]
+            return pd.Series(d)
+
+        g = f.groupby('date')['balance'].first().reset_index()
+        name = 'Balance'
+        color = get_colors('balance', 1)[0]
+        opts = {
+          'name': name,
+          'color': color,
+        }
+        opts['series_type'] = 'line'
+        chart.add_data_set(g['balance'].values.tolist(), **opts)
 
         # Split credit and debit into two stacks, each split by category
         for column in ['credit', 'debit']:
@@ -448,22 +464,6 @@ def plot(summary, currency=None, width=None, height=None):
                 opts = {'name': name, 'stack': column, 'color': color}
                 chart.add_data_set(g[column].values.tolist(), 'column', **opts)
 
-        def my_agg(group):
-            d = {}
-            d['balance'] = group['balance'].iat[0]
-            return pd.Series(d)
-
-        #g = f.groupby('date').apply(my_agg).reset_index()
-        g = f.groupby('date')['balance'].first().reset_index()
-        name = 'Balance'
-        color = get_colors('balance', 1)[0]
-        opts = {
-          'name': name,
-          'color': color,
-        }
-        opts['series_type'] = 'line'
-        chart.add_data_set(g['balance'].values.tolist(), **opts)
-
     else:
         options['tooltip']['pointFormat'] = '''
           <tr>
@@ -475,7 +475,7 @@ def plot(summary, currency=None, width=None, height=None):
           '''
         options['tooltip']['footerFormat'] = '</table>'
         options['tooltip']['shared'] = True
-        columns = ['credit', 'debit', 'balance']
+        columns = ['balance', 'credit', 'debit']
         for column in columns:
             name = column.split('_')[-1].capitalize()
             color = get_colors(column, 1)[0]

@@ -54,6 +54,11 @@ Authors
 History
 ========
 
+?, ?
+------------------
+- In ``plot``, moved 'balance' series to first position
+
+
 2.2.1, 2017-10-14
 ------------------
 - In function ``summarize``, changed weekly and daily averages calculations to use credit - debit. Also changed default sort order of DataFrame output.
