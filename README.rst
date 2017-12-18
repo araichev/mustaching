@@ -54,10 +54,6 @@ Authors
 History
 ========
 
-?, ?
-------------------
-- In ``plot``, moved 'balance' series to first position
-
 
 2.2.1, 2017-10-14
 ------------------
