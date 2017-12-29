@@ -6,7 +6,8 @@ Uses Pandas and Python-Highcharts to do most of the work.
 
 Installation
 =============
-``pip install git+https://github.com/araichev/mustaching``
+- Using Pipenv, do ``pipenv install git+https://github.com/araichev/mustaching#egg=mustaching``
+- Alternatively, using Pip and a virtual environment, do ``pip install git+https://github.com/araichev/mustaching``
 
 
 Usage
@@ -26,6 +27,11 @@ Your CSV of transactions should contain at least the following columns
 The business logic can be found in ``mustaching/main.py``
 
 
+Documentation
+==============
+In docs and `on RawGit <https://rawgit.com/araichev/mustaching/master/docs/_build/singlehtml/index.html>`_.
+
+
 Notes
 ========
 - Development status: Alpha
@@ -35,5 +41,3 @@ Notes
 Authors
 ========
 - Alex Raichev, 2016-11
-
-
