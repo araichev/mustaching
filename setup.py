@@ -21,6 +21,7 @@ setup(
     install_requires=[
         'pandas>=0.19',
         'python-highcharts>=0.3.1',
+        'color-lover>=0.2.1',
     ],
     packages=find_packages(exclude=('tests', 'docs')),
 )
