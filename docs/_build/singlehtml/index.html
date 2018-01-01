@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>mustaching documentation</title>
-    
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
@@ -33,7 +30,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head>
-  <body role="document">
+  <body>
   
 
     <div class="document">
@@ -42,11 +39,11 @@
           <div class="body" role="main">
             
   <div class="section" id="mustaching-version-documentation">
-<h1>mustaching 2.2.1 Documentation<a class="headerlink" href="#mustaching-version-documentation" title="Permalink to this headline">¶</a></h1>
+<h1>mustaching 3.0.0 Documentation<a class="headerlink" href="#mustaching-version-documentation" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 <span id="document-introduction"></span><div class="section" id="introduction">
 <h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
-<p>A Python 3.4+ package inspired by Mr. Money Mustache to summarize and plot personal finance data given in a CSV file.
+<p>A tiny Python 3.4+ library inspired by Mr. Money Mustache to summarize and plot personal finance data given in a CSV file.
 Uses Pandas and Python-Highcharts to do most of the work.</p>
 <div class="section" id="installation">
 <h3>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h3>
@@ -57,16 +54,16 @@ Uses Pandas and Python-Highcharts to do most of the work.</p>
 </div>
 <div class="section" id="usage">
 <h3>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h3>
-<p>Play with the IPython notebook <code class="docutils literal"><span class="pre">ipynb/examples.ipynb</span></code>.
-You can do so online by clicking the Binder badge above.
-You can even upload your own transaction data into the notebook, but consider first <a class="reference external" href="http://docs.mybinder.org/faq">Binder&#8217;s warning about private data</a>.</p>
+<p>Play with the IPython notebook at <code class="docutils literal"><span class="pre">ipynb/examples.ipynb</span></code>.
+You can even do so online by clicking the Binder badge above.
+Using Binder you can also upload your own transaction data into the notebook, but consider first <a class="reference external" href="http://docs.mybinder.org/faq">Binder’s warning about private data</a>.</p>
 <p>Your CSV of transactions should contain at least the following columns</p>
 <ul class="simple">
 <li><code class="docutils literal"><span class="pre">'date'</span></code>: string; something consistent and recognizable by Pandas, e.g 2016-11-26</li>
 <li><code class="docutils literal"><span class="pre">'amount'</span></code>: float; amount of transaction; positive or negative, indicating a credit or debit, respectively</li>
-<li><code class="docutils literal"><span class="pre">'description'</span></code> (optional): string; description of transaction, e.g. &#8216;dandelion and burdock tea&#8217;</li>
-<li><code class="docutils literal"><span class="pre">'category'</span></code> (optional): string; categorization of description, e.g. &#8216;healthcare&#8217;</li>
-<li><code class="docutils literal"><span class="pre">'comment'</span></code> (optional): string; comment on transaction, e.g. &#8216;a gram of prevention is worth 16 grams of cure&#8217;</li>
+<li><code class="docutils literal"><span class="pre">'description'</span></code> (optional): string; description of transaction, e.g. ‘dandelion and burdock tea’</li>
+<li><code class="docutils literal"><span class="pre">'category'</span></code> (optional): string; categorization of description, e.g. ‘healthcare’</li>
+<li><code class="docutils literal"><span class="pre">'comment'</span></code> (optional): string; comment on transaction, e.g. ‘a gram of prevention is worth 16 grams of cure’</li>
 </ul>
 <p>The business logic can be found in <code class="docutils literal"><span class="pre">mustaching/main.py</span></code></p>
 </div>
@@ -101,7 +98,7 @@ You can even upload your own transaction data into the notebook, but consider fi
 <li>date: Numpy datetime</li>
 <li>amount: float</li>
 <li>description (optional): string</li>
-<li>category (optional): Pandas &#8216;category&#8217;</li>
+<li>category (optional): Pandas ‘category’</li>
 <li>comment (optional): string</li>
 </ul>
 </dd>
@@ -111,8 +108,8 @@ You can even upload your own transaction data into the notebook, but consider fi
 </dd>
 </dl>
 <dl class="function">
-<dt id="mustaching.main.build_sample_transactions">
-<code class="descclassname">mustaching.main.</code><code class="descname">build_sample_transactions</code><span class="sig-paren">(</span><em>date1</em>, <em>date2</em>, <em>freq='12H'</em>, <em>credit_categories=None</em>, <em>debit_categories=None</em><span class="sig-paren">)</span><a class="headerlink" href="#mustaching.main.build_sample_transactions" title="Permalink to this definition">¶</a></dt>
+<dt id="mustaching.main.create_transactions">
+<code class="descclassname">mustaching.main.</code><code class="descname">create_transactions</code><span class="sig-paren">(</span><em>date1</em>, <em>date2</em>, <em>freq='12H'</em>, <em>credit_categories=None</em>, <em>debit_categories=None</em><span class="sig-paren">)</span><a class="headerlink" href="#mustaching.main.create_transactions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a DataFrame of sample transactions between the given dates
 (date strings that Pandas can interpret, such as YYYYMMDD) and at
 the given Pandas frequency.
@@ -153,17 +150,6 @@ to use for color coding the given column (string; one of
 </dd></dl>
 
 <dl class="function">
-<dt id="mustaching.main.get_duration">
-<code class="descclassname">mustaching.main.</code><code class="descname">get_duration</code><span class="sig-paren">(</span><em>date</em>, <em>freq</em><span class="sig-paren">)</span><a class="headerlink" href="#mustaching.main.get_duration" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the duration of the period starting at the given date and
-spanning the given frequency.</p>
-<dl class="docutils">
-<dt>NOTES:</dt>
-<dd>Could not find a Pandas function to do this for me.</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
 <dt id="mustaching.main.insert_repeating">
 <code class="descclassname">mustaching.main.</code><code class="descname">insert_repeating</code><span class="sig-paren">(</span><em>transactions</em>, <em>amount</em>, <em>freq</em>, <em>description=None</em>, <em>category=None</em>, <em>comment=None</em>, <em>start_date=None</em>, <em>end_date=None</em><span class="sig-paren">)</span><a class="headerlink" href="#mustaching.main.insert_repeating" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given a DataFrame of transactions, add to it a repeating transaction
@@ -180,7 +166,7 @@ Drop duplicate rows and return the resulting DataFrame.</p>
 <code class="descclassname">mustaching.main.</code><code class="descname">plot</code><span class="sig-paren">(</span><em>summary</em>, <em>currency=None</em>, <em>width=None</em>, <em>height=None</em><span class="sig-paren">)</span><a class="headerlink" href="#mustaching.main.plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given a transaction summary of the form output by <a class="reference internal" href="#mustaching.main.summarize" title="mustaching.main.summarize"><code class="xref py py-func docutils literal"><span class="pre">summarize()</span></code></a>,
 plot it using Python HighCharts.
-Include the given currency units (string; e.g. &#8216;NZD&#8217;) in the y-axis
+Include the given currency units (string; e.g. ‘NZD’) in the y-axis
 label.
 Override the default chart width and height, if desired.</p>
 </dd></dl>
@@ -197,11 +183,11 @@ resulting DataFrame.</p>
 <li><code class="docutils literal"><span class="pre">'amount'</span></code>: float; amount of transaction; positive or negative,
 indicating a credit or debit, respectively</li>
 <li><code class="docutils literal"><span class="pre">'description'</span></code> (optional): string; description of transaction,
-e.g. &#8216;dandelion and burdock tea&#8217;</li>
+e.g. ‘dandelion and burdock tea’</li>
 <li><code class="docutils literal"><span class="pre">'category'</span></code> (optional): string; categorization of description,
-e.g. &#8216;healthcare&#8217;</li>
+e.g. ‘healthcare’</li>
 <li><code class="docutils literal"><span class="pre">'comment'</span></code> (optional): string; comment on transaction, e.g.
-&#8216;a gram of prevention is worth 62.5 grams of cure&#8217;</li>
+‘a gram of prevention is worth 62.5 grams of cure’</li>
 </ul>
 <p>If the date format string <code class="docutils literal"><span class="pre">date_format</span></code> is given,  e.g
 <code class="docutils literal"><span class="pre">'%Y-%m-%d'</span></code>, then parse dates using that format; otherwise use
@@ -217,17 +203,28 @@ can interpret, such as YYYYMMDD) if specified, and return a
 DataFrame with the columns:</p>
 <ul class="simple">
 <li><code class="docutils literal"><span class="pre">'date'</span></code>: start date of period</li>
+<li><code class="docutils literal"><span class="pre">'category'</span></code> (if <cite>by_category</cite>): credit/debit category</li>
 <li><code class="docutils literal"><span class="pre">'credit'</span></code>: sum of positive amounts for the period</li>
 <li><code class="docutils literal"><span class="pre">'debit'</span></code>: absolute value of the sum of negative amounts
 for the period</li>
-<li><code class="docutils literal"><span class="pre">'balance'</span></code>: credit - debit cumulative sum</li>
-<li><code class="docutils literal"><span class="pre">'period_savings_rate'</span></code>: (credit/(credit sum))*
+<li><code class="docutils literal"><span class="pre">'balance'</span></code>: cumulative sum of credit - debit</li>
+<li><code class="docutils literal"><span class="pre">'savings_rate_for_period'</span></code>:
 (credit sum - debit sum)/(credit sum)</li>
-<li><code class="docutils literal"><span class="pre">'period_spending_rate'</span></code>: debit/(credit sum)</li>
-<li><code class="docutils literal"><span class="pre">'weekly_avg'</span></code>: only if <code class="docutils literal"><span class="pre">freq</span> <span class="pre">is</span> <span class="pre">None</span></code>; credit - debit
-divided by number of weeks between start and end date</li>
-<li><code class="docutils literal"><span class="pre">'daily_avg'</span></code>: only if <code class="docutils literal"><span class="pre">freq</span> <span class="pre">is</span> <span class="pre">None</span></code>; credit - debit
+<li><code class="docutils literal"><span class="pre">'spending_rate_for_period'</span></code>: debit/(credit sum)</li>
+<li><code class="docutils literal"><span class="pre">'saving_frac_for_category_and_period'</span></code> (if <cite>by_category</cite>):
+credit/(credit sum)</li>
+<li><code class="docutils literal"><span class="pre">'spending_frac_for_category_and_period'</span></code> (if <cite>by_category</cite>):
+debit/(debit sum)</li>
+<li><code class="docutils literal"><span class="pre">'daily_avg'</span></code> (if <cite>freq is None</cite>): credit - debit
 divided by number of days between start and end date</li>
+<li><code class="docutils literal"><span class="pre">'weekly_avg'</span></code> (if <cite>freq is None</cite>): credit - debit
+divided by number of weeks between start and end date</li>
+<li><code class="docutils literal"><span class="pre">'monthly_avg'</span></code> (if <cite>freq is None</cite>): credit - debit
+divided by number of months (possibly fractional) between
+start and end date</li>
+<li><code class="docutils literal"><span class="pre">'yearly_avg'</span></code> (if <cite>freq is None</cite>): credit - debit
+divided by number of years (possibly fractional) between
+start and end date</li>
 </ul>
 <p>The period is given by the Pandas frequency string <code class="docutils literal"><span class="pre">freq</span></code>.
 If that frequency is <code class="docutils literal"><span class="pre">None</span></code>, then there is only one period,
@@ -288,7 +285,7 @@ the <code class="docutils literal"><span class="pre">'date'</span></code> value 
       &copy;2015, Alex Raichev.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.5</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.5</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
     </div>
