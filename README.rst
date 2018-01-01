@@ -13,7 +13,7 @@ Uses Pandas and Python-Highcharts to do most of the work.
 .. image:: mustaching.jpeg
 
 .. image:: chart.png
-    :height: 300px
+    :height: 200px
 
 
 Installation
