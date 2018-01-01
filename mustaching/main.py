@@ -172,10 +172,8 @@ def summarize(transactions, freq=None, by_category=False, decimals=None,
     DataFrame with the columns:
 
     - ``'date'``: start date of period
-    - ``'category'`` (if `by_category`): credit/debit category
-    - ``'credit'``: sum of positive amounts for the period
-    - ``'debit'``: absolute value of the sum of negative amounts
-      for the period
+    - ``'category'`` (if `by_category`): transaction category
+    - ``'amount'``: amount for the period and category
     - ``'balance'``: cumulative sum of credit - debit
     - ``'savings_rate_for_period'``:
       (credit sum - debit sum)/(credit sum)
@@ -225,24 +223,24 @@ def summarize(transactions, freq=None, by_category=False, decimals=None,
       & (f['date'] <= end_date)
     f = f[cond].copy()
 
+    # Create temporary columns
     f['credit'] = f['amount'].map(lambda x: x if x > 0 else 0)
-    f['debit'] = f['amount'].map(lambda x: -x if x < 0 else 0)
-    del f['amount']
+    f['debit'] = f['amount'].map(lambda x: x if x < 0 else 0)
 
     if freq is None:
         credit = f['credit'].sum()
         debit = f['debit'].sum()
 
         if credit:
-            savings_rate = (credit - debit)/credit
-            spending_rate = debit/credit
+            savings_rate = (credit + debit)/credit
+            spending_rate = abs(debit)/credit
         else:
             savings_rate = np.nan
             spending_rate = np.nan
 
         if by_category:
             g = f.groupby('category').sum().reset_index()
-            g['balance'] = credit - debit
+            g['balance'] = credit + debit
             g['savings_rate_for_period'] = savings_rate
             g['spending_rate_for_period'] = spending_rate
             g['credit_frac_for_category_and_period'] = g['credit']/credit
@@ -251,7 +249,7 @@ def summarize(transactions, freq=None, by_category=False, decimals=None,
             d = OrderedDict()
             d['credit'] = credit
             d['debit'] = debit
-            d['balance'] = credit - debit
+            d['balance'] = credit + debit
             d['savings_rate_for_period'] = savings_rate
             d['spending_rate_for_period'] = spending_rate
             g = pd.DataFrame(d, index=[0])
@@ -265,10 +263,10 @@ def summarize(transactions, freq=None, by_category=False, decimals=None,
         num_weeks = num_days/7
         num_months = num_days/(365/12)
         num_years = num_days/365
-        g['daily_avg'] = (g['credit'] - g['debit'])/num_days
-        g['weekly_avg'] = (g['credit'] - g['debit'])/num_weeks
-        g['monthly_avg'] = (g['credit'] - g['debit'])/num_months
-        g['yearly_avg'] = (g['credit'] - g['debit'])/num_years
+        g['daily_avg'] = (g['credit'] + g['debit'])/num_days
+        g['weekly_avg'] = (g['credit'] + g['debit'])/num_weeks
+        g['monthly_avg'] = (g['credit'] + g['debit'])/num_months
+        g['yearly_avg'] = (g['credit'] + g['debit'])/num_years
 
     else:
         tg = pd.Grouper(freq=freq, label='left', closed='left')
@@ -283,16 +281,16 @@ def summarize(transactions, freq=None, by_category=False, decimals=None,
             debit_fracs = []
             for __, group in g.set_index('date').groupby(tg):
                 n = group.shape[0]
-                balance += (group['credit'] - group['debit']).sum()
+                balance += (group['credit'] + group['debit']).sum()
                 balances.extend([balance for i in range(n)])
-                savings_rate = (group['credit'] - group['debit']).sum()\
+                savings_rate = (group['credit'] + group['debit']).sum()\
                   /group['credit'].sum()
                 savings_rates.extend([savings_rate for i in range(n)])
                 credit_frac = group['credit']/group['credit'].sum()
                 credit_fracs.extend(credit_frac.values)
-                spending_rate = group['debit'].sum()/group['credit'].sum()
+                spending_rate = abs(group['debit'].sum())/group['credit'].sum()
                 spending_rates.extend([spending_rate for i in range(n)])
-                debit_frac = group['debit']/group['debit'].sum()
+                debit_frac = abs(group['debit']/group['debit'].sum())
                 debit_fracs.extend(debit_frac.values)
             g['balance'] = balances
             g['savings_rate_for_period'] = savings_rates
@@ -301,11 +299,13 @@ def summarize(transactions, freq=None, by_category=False, decimals=None,
             g['debit_frac_for_category_and_period'] = debit_fracs
         else:
             g = f.set_index('date').groupby(tg).sum().reset_index()
-            g['balance'] = (g['credit'] - g['debit']).cumsum()
-            g['savings_rate_for_period'] = (g['credit'] - g['debit'])/g['credit']
-            g['spending_rate_for_period'] = g['debit']/g['credit']
+            g['balance'] = (g['credit'] + g['debit']).cumsum()
+            g['savings_rate_for_period'] =\
+              (g['credit'] + g['debit'])/g['credit']
+            g['spending_rate_for_period'] = abs(g['debit'])/g['credit']
 
-    # Fix column order if needed
+    # Prepare final columns
+    del g['amount']
     if by_category:
         cols = g.columns.tolist()
         cols.remove('date')
@@ -332,13 +332,10 @@ def get_colors(column_name, n):
     ``['credit', 'debit', 'period_budget', 'balance']``.
 
     NOTES:
-        - Returns at most 6 distinct colors. Repeats color beyond that.
-        - Helper function for :func:`plot`.
+
+    - Returns at most 6 distinct colors. Repeats color beyond that.
+    - Helper function for :func:`plot`.
     """
-    VALID_COLUMN_NAMES = ['credit', 'debit', 'period_budget', 'balance']
-    if column_name not in VALID_COLUMN_NAMES:
-        raise ValueError(
-          'Column name must be one of {!s}'.format(VALID_COLUMN_NAMES))
 
     # Clip n to range or sequential-type colors
     low = 3
@@ -457,10 +454,10 @@ def plot(summary, currency=None, width=None, height=None):
             # Sort categories by greatest value to least
             g = f.groupby('category').sum().reset_index(
               ).sort_values(column, ascending=False)
-            categories = g.loc[g[column] > 0, 'category'].unique()
+            categories = g.loc[abs(g[column]) > 0, 'category'].unique()
             n = len(categories)
             colors = get_colors(column, n)
-            cond1 = f[column] > 0
+            cond1 = abs(f[column]) > 0
             for category, color in zip(categories, colors):
                 cond2 = (cond1 | f[column].isnull()) &\
                   (f['category'] == category)
@@ -498,8 +495,7 @@ def plot(summary, currency=None, width=None, height=None):
         chart_opts['tooltip']['shared'] = True
 
         # Create data series
-        columns = ['credit', 'debit', 'balance']
-        for column in columns:
+        for column in ['credit', 'debit', 'balance']:
             series_opts = {
               'color': get_colors(column, 1)[0],
               'name': column.split('_')[-1].capitalize(),
