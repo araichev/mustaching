@@ -1,6 +1,11 @@
 Changes
 ========
 
+3.0.0, 2018-01-01
+------------------
+- Renamed the function ``build_sample_transactions`` to ``create_transactions``
+- Changed the output of the function ``summarize``
+
 
 2.2.1, 2017-10-14
 ------------------
