@@ -27,11 +27,6 @@ Your CSV of transactions should contain at least the following columns
 The business logic can be found in ``mustaching/main.py``
 
 
-Documentation
-==============
-In docs and `on RawGit <https://rawgit.com/araichev/mustaching/master/docs/_build/singlehtml/index.html>`_.
-
-
 Notes
 ========
 - Development status: Alpha
