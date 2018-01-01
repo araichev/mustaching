@@ -7,10 +7,12 @@ Mustaching
 .. image:: https://travis-ci.org/araichev/mustaching.svg?branch=master
     :target: https://travis-ci.org/araichev/mustaching
 
-A Python 3.4+ package inspired by Mr. Money Mustache to summarize and plot personal finance data given in a CSV file.
+A tiny Python 3.4+ library inspired by Mr. Money Mustache to summarize and plot personal finance data given in a CSV file.
 Uses Pandas and Python-Highcharts to do most of the work.
 
 .. image:: mustaching.jpeg
+
+.. image:: chart.png
 
 
 Installation
@@ -21,9 +23,9 @@ Installation
 
 Usage
 =========
-Play with the IPython notebook ``ipynb/examples.ipynb``.
-You can do so online by clicking the Binder badge above.
-You can even upload your own transaction data into the notebook, but consider first `Binder's warning about private data <http://docs.mybinder.org/faq>`_.
+Play with the IPython notebook at ``ipynb/examples.ipynb``.
+You can even do so online by clicking the Binder badge above.
+Using Binder you can also upload your own transaction data into the notebook, but consider first `Binder's warning about private data <http://docs.mybinder.org/faq>`_.
 
 Your CSV of transactions should contain at least the following columns
 
