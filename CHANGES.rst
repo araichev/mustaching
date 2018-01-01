@@ -4,7 +4,8 @@ Changes
 3.0.0, 2018-01-01
 ------------------
 - Renamed the function ``build_sample_transactions`` to ``create_transactions``
-- Changed the output of the function ``summarize``
+- Added more columns to the output of the function ``summarize``
+- Switched from using 'credit' and 'debit' to 'income' and 'expense', because i find that clearer
 
 
 2.2.1, 2017-10-14
@@ -59,7 +60,7 @@ Changes
 
 1.0.0, 2016-12-10
 ------------------
-- Changed summary columns to ``'credit'``, ``'debit'``, and ``'balance'``
+- Changed summary columns to ``'credit'``, ``'expense'``, and ``'balance'``
 - Plotted balance as a cumulative sum line series
 
 

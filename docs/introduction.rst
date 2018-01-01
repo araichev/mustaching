@@ -19,7 +19,7 @@ Using Binder you can also upload your own transaction data into the notebook, bu
 Your CSV of transactions should contain at least the following columns
 
 - ``'date'``: string; something consistent and recognizable by Pandas, e.g 2016-11-26
-- ``'amount'``: float; amount of transaction; positive or negative, indicating a credit or debit, respectively
+- ``'amount'``: float; amount of transaction; positive or negative, indicating an income or expense, respectively
 - ``'description'`` (optional): string; description of transaction, e.g. 'dandelion and burdock tea'
 - ``'category'`` (optional): string; categorization of description, e.g. 'healthcare'
 - ``'comment'`` (optional): string; comment on transaction, e.g. 'a gram of prevention is worth 16 grams of cure'
