@@ -60,7 +60,7 @@ Using Binder you can also upload your own transaction data into the notebook, bu
 <p>Your CSV of transactions should contain at least the following columns</p>
 <ul class="simple">
 <li><code class="docutils literal"><span class="pre">'date'</span></code>: string; something consistent and recognizable by Pandas, e.g 2016-11-26</li>
-<li><code class="docutils literal"><span class="pre">'amount'</span></code>: float; amount of transaction; positive or negative, indicating a credit or debit, respectively</li>
+<li><code class="docutils literal"><span class="pre">'amount'</span></code>: float; amount of transaction; positive or negative, indicating an income or expense, respectively</li>
 <li><code class="docutils literal"><span class="pre">'description'</span></code> (optional): string; description of transaction, e.g. ‘dandelion and burdock tea’</li>
 <li><code class="docutils literal"><span class="pre">'category'</span></code> (optional): string; categorization of description, e.g. ‘healthcare’</li>
 <li><code class="docutils literal"><span class="pre">'comment'</span></code> (optional): string; comment on transaction, e.g. ‘a gram of prevention is worth 16 grams of cure’</li>
@@ -105,15 +105,15 @@ Using Binder you can also upload your own transaction data into the notebook, bu
 </dl>
 <dl class="function">
 <dt id="mustaching.main.create_transactions">
-<code class="descclassname">mustaching.main.</code><code class="descname">create_transactions</code><span class="sig-paren">(</span><em>date1</em>, <em>date2</em>, <em>freq='12H'</em>, <em>credit_categories=None</em>, <em>debit_categories=None</em><span class="sig-paren">)</span><a class="headerlink" href="#mustaching.main.create_transactions" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">mustaching.main.</code><code class="descname">create_transactions</code><span class="sig-paren">(</span><em>date1</em>, <em>date2</em>, <em>freq='12H'</em>, <em>income_categories=None</em>, <em>expense_categories=None</em><span class="sig-paren">)</span><a class="headerlink" href="#mustaching.main.create_transactions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a DataFrame of sample transactions between the given dates
 (date strings that Pandas can interpret, such as YYYYMMDD) and at
 the given Pandas frequency.
 Include all the columns in the set <code class="docutils literal"><span class="pre">COLUMNS</span></code>.
-Each positive transaction will be assigned a credit category from
-the given list <code class="docutils literal"><span class="pre">credit_categories</span></code>, and each negative transaction
-will be assigned a debit category from the given list
-<code class="docutils literal"><span class="pre">debit_categories</span></code>.
+Each positive transaction will be assigned a income category from
+the given list <code class="docutils literal"><span class="pre">income_categories</span></code>, and each negative transaction
+will be assigned a expense category from the given list
+<code class="docutils literal"><span class="pre">expense_categories</span></code>.
 If these lists are not given, then whimsical default ones will be
 created.</p>
 </dd></dl>
@@ -134,15 +134,12 @@ keys.</p>
 <code class="descclassname">mustaching.main.</code><code class="descname">get_colors</code><span class="sig-paren">(</span><em>column_name</em>, <em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#mustaching.main.get_colors" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a list of <code class="docutils literal"><span class="pre">n</span></code> (positive integer) nice RGB color strings
 to use for color coding the given column (string; one of
-<code class="docutils literal"><span class="pre">['credit',</span> <span class="pre">'debit',</span> <span class="pre">'period_budget',</span> <span class="pre">'balance']</span></code>.</p>
-<dl class="docutils">
-<dt>NOTES:</dt>
-<dd><ul class="first last simple">
+<code class="docutils literal"><span class="pre">['income',</span> <span class="pre">'expense',</span> <span class="pre">'period_budget',</span> <span class="pre">'balance']</span></code>.</p>
+<p>NOTES:</p>
+<ul class="simple">
 <li>Returns at most 6 distinct colors. Repeats color beyond that.</li>
 <li>Helper function for <a class="reference internal" href="#mustaching.main.plot" title="mustaching.main.plot"><code class="xref py py-func docutils literal"><span class="pre">plot()</span></code></a>.</li>
 </ul>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="function">
@@ -177,7 +174,7 @@ resulting DataFrame.</p>
 <ul class="simple">
 <li><code class="docutils literal"><span class="pre">'date'</span></code>: string</li>
 <li><code class="docutils literal"><span class="pre">'amount'</span></code>: float; amount of transaction; positive or negative,
-indicating a credit or debit, respectively</li>
+indicating a income or expense, respectively</li>
 <li><code class="docutils literal"><span class="pre">'description'</span></code> (optional): string; description of transaction,
 e.g. ‘dandelion and burdock tea’</li>
 <li><code class="docutils literal"><span class="pre">'category'</span></code> (optional): string; categorization of description,
@@ -199,26 +196,24 @@ can interpret, such as YYYYMMDD) if specified, and return a
 DataFrame with the columns:</p>
 <ul class="simple">
 <li><code class="docutils literal"><span class="pre">'date'</span></code>: start date of period</li>
-<li><code class="docutils literal"><span class="pre">'category'</span></code> (if <cite>by_category</cite>): credit/debit category</li>
-<li><code class="docutils literal"><span class="pre">'credit'</span></code>: sum of positive amounts for the period</li>
-<li><code class="docutils literal"><span class="pre">'debit'</span></code>: absolute value of the sum of negative amounts
-for the period</li>
-<li><code class="docutils literal"><span class="pre">'balance'</span></code>: cumulative sum of credit - debit</li>
+<li><code class="docutils literal"><span class="pre">'category'</span></code> (if <cite>by_category</cite>): transaction category</li>
+<li><code class="docutils literal"><span class="pre">'amount'</span></code>: amount for the period and category</li>
+<li><code class="docutils literal"><span class="pre">'balance'</span></code>: cumulative sum of income - expense</li>
 <li><code class="docutils literal"><span class="pre">'savings_rate_for_period'</span></code>:
-(credit sum - debit sum)/(credit sum)</li>
-<li><code class="docutils literal"><span class="pre">'spending_rate_for_period'</span></code>: debit/(credit sum)</li>
+(income sum - expense sum)/(income sum)</li>
+<li><code class="docutils literal"><span class="pre">'spending_rate_for_period'</span></code>: expense/(income sum)</li>
 <li><code class="docutils literal"><span class="pre">'saving_frac_for_category_and_period'</span></code> (if <cite>by_category</cite>):
-credit/(credit sum)</li>
+income/(income sum)</li>
 <li><code class="docutils literal"><span class="pre">'spending_frac_for_category_and_period'</span></code> (if <cite>by_category</cite>):
-debit/(debit sum)</li>
-<li><code class="docutils literal"><span class="pre">'daily_avg'</span></code> (if <cite>freq is None</cite>): credit - debit
+expense/(expense sum)</li>
+<li><code class="docutils literal"><span class="pre">'daily_avg'</span></code> (if <cite>freq is None</cite>): income - expense
 divided by number of days between start and end date</li>
-<li><code class="docutils literal"><span class="pre">'weekly_avg'</span></code> (if <cite>freq is None</cite>): credit - debit
+<li><code class="docutils literal"><span class="pre">'weekly_avg'</span></code> (if <cite>freq is None</cite>): income - expense
 divided by number of weeks between start and end date</li>
-<li><code class="docutils literal"><span class="pre">'monthly_avg'</span></code> (if <cite>freq is None</cite>): credit - debit
+<li><code class="docutils literal"><span class="pre">'monthly_avg'</span></code> (if <cite>freq is None</cite>): income - expense
 divided by number of months (possibly fractional) between
 start and end date</li>
-<li><code class="docutils literal"><span class="pre">'yearly_avg'</span></code> (if <cite>freq is None</cite>): credit - debit
+<li><code class="docutils literal"><span class="pre">'yearly_avg'</span></code> (if <cite>freq is None</cite>): income - expense
 divided by number of years (possibly fractional) between
 start and end date</li>
 </ul>
