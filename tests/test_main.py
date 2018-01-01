@@ -14,7 +14,7 @@ def test_create_transactions():
     assert isinstance(t['date'].iat[0], pd.Timestamp)
 
 def test_find_colums():
-    f = pd.DataFrame(columns=['Amount', 'DATE', 'credity'])
+    f = pd.DataFrame(columns=['Amount', 'DATE', 'incomey'])
     get = find_columns(f)
     expect = {'amount': 'Amount', 'date': 'DATE'}
     assert get == expect
@@ -28,11 +28,11 @@ def test_insert_repeating():
     assert f['category'].dtype == 'category'
 
 def test_summarize():
-    default_cols = ['date', 'credit', 'debit', 'balance',
+    default_cols = ['date', 'income', 'expense', 'balance',
       'savings_rate_for_period', 'spending_rate_for_period']
     avg_cols = ['daily_avg', 'weekly_avg', 'monthly_avg', 'yearly_avg']
-    cat_cols = ['category', 'credit_frac_for_category_and_period',
-      'debit_frac_for_category_and_period']
+    cat_cols = ['category', 'income_frac_for_category_and_period',
+      'expense_frac_for_category_and_period']
 
     t = create_transactions('2017-01-01', '2017-12-31')
     s = summarize(t)
@@ -58,12 +58,9 @@ def test_summarize():
 
 def test_get_colors():
     n = 300
-    c = get_colors('credit', n)
+    c = get_colors('income', n)
     assert len(c) == n
     assert len(set(c)) == 6
-
-    with pytest.raises(ValueError):
-        c = get_colors('bingo', n)
 
 def test_plot():
     t = create_transactions('2017-01-01', '2017-12-31')
