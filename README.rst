@@ -7,14 +7,15 @@ Mustaching
 .. image:: https://travis-ci.org/araichev/mustaching.svg?branch=master
     :target: https://travis-ci.org/araichev/mustaching
 
-A tiny Python 3.4+ library inspired by Mr. Money Mustache to summarize and plot personal finance data given in a CSV file.
+A tiny Python 3.4+ library inspired by Mr. Money Mustache to summarize and plot personal finance data given in a CSV file of transactions.
 Uses Pandas and Python-Highcharts to do most of the work.
 
-.. .. image:: mustaching.jpeg
-
-.. image:: docs/_static/chart.png
-    :height: 100px
+.. image:: _static/chart.png
+    :width: 500px
     :alt: chart
+
+Smacks of `plain text accounting <http://plaintextaccounting.org/>`_ but is limited to single-entry transactions and focuses only on income and expenses.
+For full-featured double-entry bookkeeping in Python, use a different library, such as `beancount <https://bitbucket.org/blais/beancount/overview>`_.
 
 
 Installation
