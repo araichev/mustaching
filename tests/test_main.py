@@ -29,10 +29,11 @@ def test_insert_repeating():
 
 def test_summarize():
     default_cols = ['date', 'income', 'expense', 'balance',
-      'savings_rate_for_period', 'spending_rate_for_period']
+      'savings_pc_for_period', 'spending_pc_for_period']
     avg_cols = ['daily_avg', 'weekly_avg', 'monthly_avg', 'yearly_avg']
-    cat_cols = ['category', 'income_frac_for_category_and_period',
-      'expense_frac_for_category_and_period']
+    cat_cols = ['category', 'spending_pc_for_period_and_category',
+      'income_pc_for_period_and_category',
+      'expense_pc_for_period_and_category']
 
     t = create_transactions('2017-01-01', '2017-12-31')
     s = summarize(t)
@@ -45,16 +46,22 @@ def test_summarize():
     assert set(s.columns) == set(expect_cols)
     assert s.shape[0] == 12
 
-    s = summarize(t, by_category=True)
+    s = summarize(t, by_category=True, decimals=None)
     expect_cols = default_cols + avg_cols + cat_cols
     assert set(s.columns) == set(expect_cols)
     ncats = t.category.nunique()
     assert s.shape[0] == ncats
+    assert s['spending_pc_for_period_and_category'].sum() ==\
+      pytest.approx(s['spending_pc_for_period'].iat[0])
 
-    s = summarize(t, freq='MS', by_category=True)
+    s = summarize(t, freq='MS', by_category=True, decimals=None)
     expect_cols = default_cols + cat_cols
     assert set(s.columns) == set(expect_cols)
     assert s.shape[0] == ncats*12
+    for __, group in s.groupby('date'):
+        assert group['spending_pc_for_period_and_category'].sum() ==\
+          pytest.approx(group['spending_pc_for_period'].iat[0])
+
 
 def test_get_colors():
     n = 300
