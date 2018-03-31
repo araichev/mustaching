@@ -163,7 +163,7 @@ def insert_repeating(transactions, amount, freq,
 
     return h
 
-def summarize(transactions, freq=None, by_category=False, decimals=None,
+def summarize(transactions, freq=None, by_category=False, decimals=2,
   start_date=None, end_date=None):
     """
     Given a DataFrame of transactions, slice it from the given start
@@ -175,13 +175,15 @@ def summarize(transactions, freq=None, by_category=False, decimals=None,
     - ``'category'`` (if `by_category`): transaction category
     - ``'amount'``: amount for the period and category
     - ``'balance'``: cumulative sum of income - expense
-    - ``'savings_rate_for_period'``:
-      (income sum - expense sum)/(income sum)
-    - ``'spending_rate_for_period'``: expense/(income sum)
-    - ``'saving_frac_for_category_and_period'`` (if `by_category`):
-      income/(income sum)
-    - ``'spending_frac_for_category_and_period'`` (if `by_category`):
-      expense/(expense sum)
+    - ``'savings_pc_for_period'``:
+      100*(income sum - expense sum)/(income sum)
+    - ``'spending_pc_for_period'``: 100*expense/(income sum)
+    - ``'spending_pc_for_period_and_category'`` (if `by_category`):
+      100*expense/(income sum)
+    - ``'income_pc_for_period_and_category'`` (if `by_category`):
+      100*income/(income sum)
+    - ``'expense_pc_for_period_and_category'`` (if `by_category`):
+      100*expense/(expense sum)
     - ``'daily_avg'`` (if `freq is None`): income - expense
       divided by number of days between start and end date
     - ``'weekly_avg'`` (if `freq is None`): income - expense
@@ -233,26 +235,27 @@ def summarize(transactions, freq=None, by_category=False, decimals=None,
         expense = f['expense'].sum()
 
         if income:
-            savings_rate = (income - expense)/income
-            spending_rate = expense/income
+            savings_pc = 100*(income - expense)/income
+            spending_pc = 100*expense/income
         else:
-            savings_rate = np.nan
-            spending_rate = np.nan
+            savings_pc = np.nan
+            spending_pc = np.nan
 
         if by_category:
             g = f.groupby('category').sum().reset_index()
             g['balance'] = income - expense
-            g['savings_rate_for_period'] = savings_rate
-            g['spending_rate_for_period'] = spending_rate
-            g['income_frac_for_category_and_period'] = g['income']/income
-            g['expense_frac_for_category_and_period'] = g['expense']/expense
+            g['savings_pc_for_period'] = savings_pc
+            g['spending_pc_for_period'] = spending_pc
+            g['spending_pc_for_period_and_category'] = 100*g['expense']/income
+            g['income_pc_for_period_and_category'] = 100*g['income']/income
+            g['expense_pc_for_period_and_category'] = 100*g['expense']/expense
         else:
             d = OrderedDict()
             d['income'] = income
             d['expense'] = expense
             d['balance'] = income - expense
-            d['savings_rate_for_period'] = savings_rate
-            d['spending_rate_for_period'] = spending_rate
+            d['savings_pc_for_period'] = savings_pc
+            d['spending_pc_for_period'] = spending_pc
             g = pd.DataFrame(d, index=[0])
 
         # Append first transaction date
@@ -276,34 +279,38 @@ def summarize(transactions, freq=None, by_category=False, decimals=None,
             g = f.set_index('date').groupby(cols).sum().reset_index()
             balance = 0
             balances = []
-            savings_rates = []
-            income_fracs = []
-            spending_rates = []
-            expense_fracs = []
+            savings_pcs = []
+            spending_pcs = []
+            spending_pcs_c = []
+            income_pcs_c = []
+            expense_pcs_c = []
             for __, group in g.set_index('date').groupby(tg):
                 n = group.shape[0]
                 balance += (group['income'] - group['expense']).sum()
                 balances.extend([balance for i in range(n)])
-                savings_rate = (group['income'] - group['expense']).sum()\
+                savings_pc = 100*(group['income'] - group['expense']).sum()\
                   /group['income'].sum()
-                savings_rates.extend([savings_rate for i in range(n)])
-                income_frac = group['income']/group['income'].sum()
-                income_fracs.extend(income_frac.values)
-                spending_rate = group['expense'].sum()/group['income'].sum()
-                spending_rates.extend([spending_rate for i in range(n)])
-                expense_frac = group['expense']/group['expense'].sum()
-                expense_fracs.extend(expense_frac.values)
+                savings_pcs.extend([savings_pc for i in range(n)])
+                spending_pc = 100*group['expense'].sum()/group['income'].sum()
+                spending_pcs.extend([spending_pc for i in range(n)])
+                spending_pc_c = 100*group['expense']/group['income'].sum()
+                spending_pcs_c.extend(spending_pc_c.values)
+                income_pc_c = 100*group['income']/group['income'].sum()
+                income_pcs_c.extend(income_pc_c.values)
+                expense_pc_c = 100*group['expense']/group['expense'].sum()
+                expense_pcs_c.extend(expense_pc_c.values)
             g['balance'] = balances
-            g['savings_rate_for_period'] = savings_rates
-            g['spending_rate_for_period'] = spending_rates
-            g['income_frac_for_category_and_period'] = income_fracs
-            g['expense_frac_for_category_and_period'] = expense_fracs
+            g['savings_pc_for_period'] = savings_pcs
+            g['spending_pc_for_period'] = spending_pcs
+            g['spending_pc_for_period_and_category'] = spending_pcs_c
+            g['income_pc_for_period_and_category'] = income_pcs_c
+            g['expense_pc_for_period_and_category'] = expense_pcs_c
         else:
             g = f.set_index('date').groupby(tg).sum().reset_index()
             g['balance'] = (g['income'] - g['expense']).cumsum()
-            g['savings_rate_for_period'] =\
-              (g['income'] - g['expense'])/g['income']
-            g['spending_rate_for_period'] = g['expense']/g['income']
+            g['savings_pc_for_period'] =\
+              100*(g['income'] - g['expense'])/g['income']
+            g['spending_pc_for_period'] = 100*g['expense']/g['income']
 
     # Prepare final columns
     if by_category:
@@ -316,7 +323,7 @@ def summarize(transactions, freq=None, by_category=False, decimals=None,
 
     # Replace infinities with nans
     g = g.replace(np.inf, np.nan).sort_values(
-      ['date', 'spending_rate_for_period', 'savings_rate_for_period'],
+      ['date', 'spending_pc_for_period', 'savings_pc_for_period'],
       ascending=[True, True, False])
 
     # Round

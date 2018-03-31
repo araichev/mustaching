@@ -39,7 +39,7 @@
           <div class="body" role="main">
             
   <div class="section" id="mustaching-version-documentation">
-<h1>mustaching 3.0.0 Documentation<a class="headerlink" href="#mustaching-version-documentation" title="Permalink to this headline">¶</a></h1>
+<h1>mustaching 3.1.0 Documentation<a class="headerlink" href="#mustaching-version-documentation" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 <span id="document-introduction"></span><div class="section" id="introduction">
 <h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
@@ -192,7 +192,7 @@ let Pandas guess the date format.</p>
 
 <dl class="function">
 <dt id="mustaching.main.summarize">
-<code class="descclassname">mustaching.main.</code><code class="descname">summarize</code><span class="sig-paren">(</span><em>transactions</em>, <em>freq=None</em>, <em>by_category=False</em>, <em>decimals=None</em>, <em>start_date=None</em>, <em>end_date=None</em><span class="sig-paren">)</span><a class="headerlink" href="#mustaching.main.summarize" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">mustaching.main.</code><code class="descname">summarize</code><span class="sig-paren">(</span><em>transactions</em>, <em>freq=None</em>, <em>by_category=False</em>, <em>decimals=2</em>, <em>start_date=None</em>, <em>end_date=None</em><span class="sig-paren">)</span><a class="headerlink" href="#mustaching.main.summarize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given a DataFrame of transactions, slice it from the given start
 date to and including the given end date date (strings that Pandas
 can interpret, such as YYYYMMDD) if specified, and return a
@@ -202,13 +202,15 @@ DataFrame with the columns:</p>
 <li><code class="docutils literal"><span class="pre">'category'</span></code> (if <cite>by_category</cite>): transaction category</li>
 <li><code class="docutils literal"><span class="pre">'amount'</span></code>: amount for the period and category</li>
 <li><code class="docutils literal"><span class="pre">'balance'</span></code>: cumulative sum of income - expense</li>
-<li><code class="docutils literal"><span class="pre">'savings_rate_for_period'</span></code>:
-(income sum - expense sum)/(income sum)</li>
-<li><code class="docutils literal"><span class="pre">'spending_rate_for_period'</span></code>: expense/(income sum)</li>
-<li><code class="docutils literal"><span class="pre">'saving_frac_for_category_and_period'</span></code> (if <cite>by_category</cite>):
-income/(income sum)</li>
-<li><code class="docutils literal"><span class="pre">'spending_frac_for_category_and_period'</span></code> (if <cite>by_category</cite>):
-expense/(expense sum)</li>
+<li><code class="docutils literal"><span class="pre">'savings_pc_for_period'</span></code>:
+100*(income sum - expense sum)/(income sum)</li>
+<li><code class="docutils literal"><span class="pre">'spending_pc_for_period'</span></code>: 100*expense/(income sum)</li>
+<li><code class="docutils literal"><span class="pre">'spending_pc_for_period_and_category'</span></code> (if <cite>by_category</cite>):
+100*expense/(income sum)</li>
+<li><code class="docutils literal"><span class="pre">'income_pc_for_period_and_category'</span></code> (if <cite>by_category</cite>):
+100*income/(income sum)</li>
+<li><code class="docutils literal"><span class="pre">'expense_pc_for_period_and_category'</span></code> (if <cite>by_category</cite>):
+100*expense/(expense sum)</li>
 <li><code class="docutils literal"><span class="pre">'daily_avg'</span></code> (if <cite>freq is None</cite>): income - expense
 divided by number of days between start and end date</li>
 <li><code class="docutils literal"><span class="pre">'weekly_avg'</span></code> (if <cite>freq is None</cite>): income - expense
