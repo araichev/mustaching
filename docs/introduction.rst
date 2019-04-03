@@ -1,32 +1,45 @@
 Introduction
 ************
-A Python 3.4+ package inspired by Mr. Money Mustache to summarize and plot personal finance data given in a CSV file.
+A tiny Python 3.4+ library inspired by Mr. Money Mustache to summarize and plot personal finance data given in a CSV file of transactions.
 Uses Pandas and Python-Highcharts to do most of the work.
+
+.. image:: _static/chart.png
+    :width: 500px
+    :alt: chart
+
+Smacks of `plain text accounting <http://plaintextaccounting.org/>`_ but is limited to single-entry transactions and focuses only on income and expenses.
+For full-feature double-entry bookkeeping in Python, use a different library, such as `beancount <https://bitbucket.org/blais/beancount/overview>`_.
+
+
+Installation
+=============
+- Using Pipenv, do ``pipenv install git+https://github.com/araichev/mustaching#egg=mustaching``
+- Alternatively, using Pip and a virtual environment, do ``pip install git+https://github.com/araichev/mustaching``
 
 
 Usage
 =========
-Play with the IPython notebook ``ipynb/examples.ipynb``.
-You can do so online by clicking the Binder badge above.
-You can even upload your own transaction data into the notebook, but consider first `Binder's warning about private data <http://docs.mybinder.org/faq>`_.
+Play with the IPython notebook at ``ipynb/examples.ipynb``.
+You can even do so online by clicking the Binder badge above.
+Using Binder you can also upload your own transaction data into the notebook, but consider first `Binder's warning about private data <http://docs.mybinder.org/faq>`_.
 
 Your CSV of transactions should contain at least the following columns
 
 - ``'date'``: string; something consistent and recognizable by Pandas, e.g 2016-11-26
-- ``'amount'``: float; amount of transaction; positive or negative, indicating a credit or debit, respectively
+- ``'amount'``: float; amount of transaction; positive or negative, indicating an income or expense, respectively
 - ``'description'`` (optional): string; description of transaction, e.g. 'dandelion and burdock tea'
-- ``'category'`` (optional): string; categorization of description, e.g. 'healthcare' 
+- ``'category'`` (optional): string; categorization of description, e.g. 'healthcare'
 - ``'comment'`` (optional): string; comment on transaction, e.g. 'a gram of prevention is worth 16 grams of cure'
+
+The business logic can be found in ``mustaching/main.py``
 
 
 Notes
 ========
 - Development status: Alpha
-- This project uses semantic versioning (major.minor.micro), where each breaking feature or API change is considered a major change
+- This project uses semantic versioning
 
 
 Authors
 ========
 - Alex Raichev, 2016-11
-
-
