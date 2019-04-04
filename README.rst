@@ -1,5 +1,5 @@
 Mustaching
-***********
+**********
 
 .. image:: http://mybinder.org/badge.svg
     :target: http://mybinder.org:/repo/araichev/mustaching
@@ -7,7 +7,7 @@ Mustaching
 .. image:: https://travis-ci.org/araichev/mustaching.svg?branch=master
     :target: https://travis-ci.org/araichev/mustaching
 
-A tiny Python 3.4+ library inspired by Mr. Money Mustache to summarize and plot personal finance data given in a CSV file of transactions.
+A tiny Python 3.6+ library inspired by Mr. Money Mustache to summarize and plot personal finance data given in a CSV file of transactions.
 Uses Pandas and Python-Highcharts to do most of the work.
 
 .. image:: docs/_static/chart.png
@@ -20,8 +20,7 @@ For full-featured double-entry bookkeeping in Python, use a different library, s
 
 Installation
 =============
-- Using Pipenv, do ``pipenv install git+https://github.com/araichev/mustaching#egg=mustaching``
-- Alternatively, using Pip and a virtual environment, do ``pip install git+https://github.com/araichev/mustaching``
+``pip install mustaching``
 
 
 Usage
@@ -43,7 +42,7 @@ The business logic can be found in ``mustaching/main.py``
 
 Documentation
 ==============
-In docs and `on RawGit <https://rawgit.com/araichev/mustaching/master/docs/_build/singlehtml/index.html>`_.
+At `https://raichev.net/mustaching_docs <https://raichev.net/mustaching_docs>`_.
 
 
 Notes
@@ -55,3 +54,14 @@ Notes
 Authors
 ========
 - Alex Raichev, 2016-11
+
+
+Changes
+=======
+
+3.1.1, 2019-04-03
+------------------
+- Switched to Poetry.
+- Published docs using publish-sphinx-docs.
+- Published on PyPi.
+- Dropped unused categories in ``summarize()``.

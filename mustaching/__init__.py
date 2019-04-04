@@ -1,2 +1,3 @@
-from ._version import __version__
 from .main import *
+
+__version__ = "3.1.1"
