@@ -1,6 +1,18 @@
 Changes
 ========
 
+3.1.2, 2020-09-06
+-----------------
+- Upgraded to Python 3.8
+
+3.1.1, 2019-04-03
+------------------
+- Switched to Poetry.
+- Published docs using publish-sphinx-docs.
+- Published on PyPi.
+- Dropped unused categories in ``summarize()``.
+
+
 3.1.0, 2018-03-31
 ------------------
 - Changed the columns output by the function ``summarize``

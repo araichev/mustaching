@@ -20,7 +20,7 @@ For full-featured double-entry bookkeeping in Python, use a different library, s
 
 Installation
 =============
-``pip install mustaching``
+``poetry install mustaching``
 
 
 Usage
@@ -54,14 +54,3 @@ Notes
 Authors
 ========
 - Alex Raichev, 2016-11
-
-
-Changes
-=======
-
-3.1.1, 2019-04-03
-------------------
-- Switched to Poetry.
-- Published docs using publish-sphinx-docs.
-- Published on PyPi.
-- Dropped unused categories in ``summarize()``.
