@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "mustaching"
-version = "3.1.1"
+version = "3.1.2"
 description = "A Python 3.8+ library inspired by Mr. Money Mustache to summarize and plot personal finance data given in a CSV file of transactions."
 authors = ["Alex Raichev <alex@raichev.net>"]
 license = "MIT"
