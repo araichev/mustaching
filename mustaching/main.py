@@ -9,7 +9,6 @@ CONVENTIONS:
 """
 import random
 from collections import OrderedDict
-from copy import deepcopy
 
 import pandas as pd
 import numpy as np
@@ -497,6 +496,7 @@ def plot(summary, currency=None, width=None, height=None):
                     "color": color,
                     "series_type": "column",
                     "stack": column,
+                    "borderColor": "white",
                 }
                 chart.add_data_set(g[column].values.tolist(), **series_opts)
 
@@ -511,6 +511,7 @@ def plot(summary, currency=None, width=None, height=None):
             "name": "Balance",
             "color": get_colors("balance", 1)[0],
             "series_type": "line",
+            "borderColor": "white",
         }
         chart.add_data_set(g["balance"].values.tolist(), **series_opts)
 
@@ -536,6 +537,7 @@ def plot(summary, currency=None, width=None, height=None):
                 "color": get_colors(column, 1)[0],
                 "name": column.split("_")[-1].capitalize(),
                 "series_type": "line" if column == "balance" else "column",
+                "borderColor": "white",
             }
             chart.add_data_set(f[column].values.tolist(), **series_opts)
 
