@@ -20,12 +20,12 @@ For full-featured double-entry bookkeeping in Python, use a different library, s
 
 Installation
 =============
-``poetry install mustaching``
+``poetry add mustaching``
 
 
 Usage
 =========
-Play with the IPython notebook at ``ipynb/examples.ipynb``.
+Play with the Jupyter notebook at ``jupyter/examples.ipynb``.
 You can even do so online by clicking the Binder badge above.
 Using Binder you can also upload your own transaction data into the notebook, but consider first `Binder's warning about private data <http://docs.mybinder.org/faq>`_.
 
