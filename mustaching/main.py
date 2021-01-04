@@ -8,7 +8,7 @@ CONVENTIONS:
         * comment (optional): string
 """
 import random
-from collections import OrderedDict
+from typing import Dict
 
 import pandas as pd
 import numpy as np
@@ -16,8 +16,8 @@ import colorlover as cl
 from highcharts import Highchart
 
 
-COLUMNS = {"date", "amount", "description", "category", "comment"}
-REQUIRED_COLUMNS = {"date", "amount"}
+COLUMNS = ["date", "amount", "description", "category", "comment"]
+REQUIRED_COLUMNS = ["date", "amount"]
 
 
 def create_transactions(
@@ -76,7 +76,7 @@ def create_transactions(
     return f
 
 
-def find_columns(raw_transactions):
+def find_columns(raw_transactions: pd.DataFrame) -> Dict[str, str]:
     """
     Given a DataFrame, lowercase the column names and search for the
     columns in ``COLUMNS``.
@@ -85,7 +85,7 @@ def find_columns(raw_transactions):
     and return the result, which might not contain all the ``COLUMNS``
     keys.
     """
-    f = raw_transactions.copy()
+    f = raw_transactions
     col_dict = {}
     for key in COLUMNS:
         for c in f.columns:
@@ -93,6 +93,33 @@ def find_columns(raw_transactions):
                 col_dict[key] = c
     return col_dict
 
+
+def validate_transactions(transactions: pd.DataFrame) -> None:
+    """
+    Raise a ValueError if the given DataFrame of transactions is invalid.
+    Otherwise do nothing.
+
+    Validation checks:
+
+    1. Transactions must contain :const:`REQUIRED_COLUMNS`.
+    2. Transactions filtered to :const:`REQUIRED_COLUMNS` must not be empty.
+    3. Transactions filtered to :const:`REQUIRED_COLUMNS` must be non null.
+
+    """
+    if not set(transactions.columns) >= set(REQUIRED_COLUMNS):
+        raise ValueError(
+            f"Could not find columns resembling {REQUIRED_COLUMNS} in transactions"
+        )
+
+    if transactions.filter(REQUIRED_COLUMNS).empty:
+        raise ValueError(
+            f"{REQUIRED_COLUMNS} has no data"
+        )
+
+    if transactions.filter(REQUIRED_COLUMNS).isna().sum():
+        raise ValueError(
+            f"{REQUIRED_COLUMNS} contains null data"
+        )
 
 def read_transactions(path, date_format=None, **kwargs):
     """
@@ -117,16 +144,15 @@ def read_transactions(path, date_format=None, **kwargs):
     let Pandas guess the date format.
     """
     f = pd.read_csv(path, **kwargs)
-    col_dict = find_columns(f)
-    if not set(col_dict.keys()) >= REQUIRED_COLUMNS:
-        raise ValueError(
-            "Could not find columns resembling {!s} in file".format(REQUIRED_COLUMNS)
-        )
 
-    # Reformat column names
-    rename1 = {val: key for key, val in col_dict.items()}
-    rename2 = {c: c.strip().lower().replace(" ", "_") for c in f.columns}
-    f = f.rename(columns=rename1).rename(columns=rename2)
+    # Normalize column names
+    f = (
+        f
+        .rename(columns={c: c.strip().lower() for c in f.columns})
+        .filter(COLUMNS)
+    )
+
+    validate_transactions(f)
 
     # Parse some
     f["date"] = pd.to_datetime(f["date"], format=date_format)
@@ -277,7 +303,7 @@ def summarize(
             g["income_pc_for_period_and_category"] = 100 * g["income"] / income
             g["expense_pc_for_period_and_category"] = 100 * g["expense"] / expense
         else:
-            d = OrderedDict()
+            d = {}
             d["income"] = income
             d["expense"] = expense
             d["balance"] = income - expense
