@@ -1,5 +1,6 @@
 Changes
 ========
+
 3.1.3, 2021-01-23
 -----------------
 - Used Pandera for data validation.
