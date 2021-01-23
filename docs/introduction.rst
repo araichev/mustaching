@@ -3,7 +3,7 @@ Introduction
 A tiny Python 3.6+ library inspired by Mr. Money Mustache to summarize and plot personal finance data given in a CSV file of transactions.
 Uses Pandas and Python-Highcharts to do most of the work.
 
-.. image:: _static/chart.png
+.. image:: _static/chart.svg
     :width: 500px
     :alt: chart
 
