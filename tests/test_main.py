@@ -2,6 +2,7 @@ from itertools import product
 
 import pytest
 import highcharts
+import pandera as pa
 
 from .context import mustaching
 from mustaching import *
@@ -10,16 +11,30 @@ from mustaching import *
 def test_create_transactions():
     t = create_transactions("2016-12-01", "2017-03-01")
     assert isinstance(t, pd.DataFrame)
-    assert set(t.columns) == COLUMNS
+    assert set(t.columns) == {"date", "amount", "description", "category", "comment"}
     assert isinstance(t["date"].iat[0], pd.Timestamp)
 
 
-def test_find_colums():
-    f = pd.DataFrame(columns=["Amount", "DATE", "incomey"])
-    get = find_columns(f)
-    expect = {"amount": "Amount", "date": "DATE"}
-    assert get == expect
+def test_validate_transactions():
+    f = pd.DataFrame({
+        "date": ["2020-12-31"],
+        "amount": [69],
+    })
+    validate_transactions(f)
 
+    f = pd.DataFrame({
+        "Date": ["2020-12-31"],
+        "amount": [69],
+    })
+    with pytest.raises(pa.errors.SchemaError):
+        validate_transactions(f)
+
+    f = pd.DataFrame({
+        "date": [2020],
+        "amount": [69],
+    })
+    with pytest.raises(pa.errors.SchemaError):
+        validate_transactions(f)
 
 def test_insert_repeating():
     t = create_transactions("2017-01-01", "2017-03-01")

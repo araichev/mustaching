@@ -11,13 +11,10 @@ import random
 from typing import Dict
 
 import pandas as pd
+import pandera as pa
 import numpy as np
 import colorlover as cl
 from highcharts import Highchart
-
-
-COLUMNS = ["date", "amount", "description", "category", "comment"]
-REQUIRED_COLUMNS = ["date", "amount"]
 
 
 def create_transactions(
@@ -75,26 +72,15 @@ def create_transactions(
 
     return f
 
+SCHEMA = pa.DataFrameSchema({
+    "date": pa.Column(pa.String),
+    "amount": pa.Column(pa.Float, coerce=True),
+    "description": pa.Column(pa.String, required=False, coerce=True),
+    "category": pa.Column(pa.String, required=False, coerce=True),
+    "comment": pa.Column(pa.String, required=False, coerce=True),
+})
 
-def find_columns(raw_transactions: pd.DataFrame) -> Dict[str, str]:
-    """
-    Given a DataFrame, lowercase the column names and search for the
-    columns in ``COLUMNS``.
-    Build a dictionary of the form
-    name in ``COLUMNS`` -> name in given DataFrame
-    and return the result, which might not contain all the ``COLUMNS``
-    keys.
-    """
-    f = raw_transactions
-    col_dict = {}
-    for key in COLUMNS:
-        for c in f.columns:
-            if key == c.lower():
-                col_dict[key] = c
-    return col_dict
-
-
-def validate_transactions(transactions: pd.DataFrame) -> None:
+def validate_transactions(transactions: pd.DataFrame) -> pd.DataFrame:
     """
     Raise a ValueError if the given DataFrame of transactions is invalid.
     Otherwise do nothing.
@@ -106,20 +92,7 @@ def validate_transactions(transactions: pd.DataFrame) -> None:
     3. Transactions filtered to :const:`REQUIRED_COLUMNS` must be non null.
 
     """
-    if not set(transactions.columns) >= set(REQUIRED_COLUMNS):
-        raise ValueError(
-            f"Could not find columns resembling {REQUIRED_COLUMNS} in transactions"
-        )
-
-    if transactions.filter(REQUIRED_COLUMNS).empty:
-        raise ValueError(
-            f"{REQUIRED_COLUMNS} has no data"
-        )
-
-    if transactions.filter(REQUIRED_COLUMNS).isna().sum():
-        raise ValueError(
-            f"{REQUIRED_COLUMNS} contains null data"
-        )
+    return SCHEMA.validate(transactions)
 
 def read_transactions(path, date_format=None, **kwargs):
     """
@@ -143,16 +116,12 @@ def read_transactions(path, date_format=None, **kwargs):
     ``'%Y-%m-%d'``, then parse dates using that format; otherwise use
     let Pandas guess the date format.
     """
-    f = pd.read_csv(path, **kwargs)
-
-    # Normalize column names
     f = (
-        f
-        .rename(columns={c: c.strip().lower() for c in f.columns})
-        .filter(COLUMNS)
+        pd.read_csv(path, **kwargs)
+        .rename(lambda x: x.strip().lower(), axis="columns")
+        .filter(["date", "amount", "description", "category", "comment"])
+        .pipe(validate_transactions)
     )
-
-    validate_transactions(f)
 
     # Parse some
     f["date"] = pd.to_datetime(f["date"], format=date_format)
