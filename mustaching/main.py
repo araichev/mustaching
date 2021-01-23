@@ -8,17 +8,13 @@ CONVENTIONS:
         * comment (optional): string
 """
 import random
-from collections import OrderedDict
-from copy import deepcopy
+from typing import Dict
 
 import pandas as pd
+import pandera as pa
 import numpy as np
 import colorlover as cl
 from highcharts import Highchart
-
-
-COLUMNS = {"date", "amount", "description", "category", "comment"}
-REQUIRED_COLUMNS = {"date", "amount"}
 
 
 def create_transactions(
@@ -76,24 +72,21 @@ def create_transactions(
 
     return f
 
+SCHEMA = pa.DataFrameSchema({
+    "date": pa.Column(pa.String),
+    "amount": pa.Column(pa.Float, coerce=True),
+    "description": pa.Column(pa.String, required=False, coerce=True),
+    "category": pa.Column(pa.String, required=False, coerce=True),
+    "comment": pa.Column(pa.String, required=False, coerce=True),
+})
 
-def find_columns(raw_transactions):
+def validate_transactions(transactions: pd.DataFrame) -> pd.DataFrame:
     """
-    Given a DataFrame, lowercase the column names and search for the
-    columns in ``COLUMNS``.
-    Build a dictionary of the form
-    name in ``COLUMNS`` -> name in given DataFrame
-    and return the result, which might not contain all the ``COLUMNS``
-    keys.
+    Raise a Pandera SchemaError if the given DataFrame of transactions does not
+    agree with the schema :const:SCHEMA.
+    Otherwise, return the DataFrame as is.
     """
-    f = raw_transactions.copy()
-    col_dict = {}
-    for key in COLUMNS:
-        for c in f.columns:
-            if key == c.lower():
-                col_dict[key] = c
-    return col_dict
-
+    return SCHEMA.validate(transactions)
 
 def read_transactions(path, date_format=None, **kwargs):
     """
@@ -117,17 +110,12 @@ def read_transactions(path, date_format=None, **kwargs):
     ``'%Y-%m-%d'``, then parse dates using that format; otherwise use
     let Pandas guess the date format.
     """
-    f = pd.read_csv(path, **kwargs)
-    col_dict = find_columns(f)
-    if not set(col_dict.keys()) >= REQUIRED_COLUMNS:
-        raise ValueError(
-            "Could not find columns resembling {!s} in file".format(REQUIRED_COLUMNS)
-        )
-
-    # Reformat column names
-    rename1 = {val: key for key, val in col_dict.items()}
-    rename2 = {c: c.strip().lower().replace(" ", "_") for c in f.columns}
-    f = f.rename(columns=rename1).rename(columns=rename2)
+    f = (
+        pd.read_csv(path, **kwargs)
+        .rename(lambda x: x.strip().lower(), axis="columns")
+        .filter(["date", "amount", "description", "category", "comment"])
+        .pipe(validate_transactions)
+    )
 
     # Parse some
     f["date"] = pd.to_datetime(f["date"], format=date_format)
@@ -278,7 +266,7 @@ def summarize(
             g["income_pc_for_period_and_category"] = 100 * g["income"] / income
             g["expense_pc_for_period_and_category"] = 100 * g["expense"] / expense
         else:
-            d = OrderedDict()
+            d = {}
             d["income"] = income
             d["expense"] = expense
             d["balance"] = income - expense
@@ -497,6 +485,7 @@ def plot(summary, currency=None, width=None, height=None):
                     "color": color,
                     "series_type": "column",
                     "stack": column,
+                    "borderColor": "white",
                 }
                 chart.add_data_set(g[column].values.tolist(), **series_opts)
 
@@ -511,6 +500,7 @@ def plot(summary, currency=None, width=None, height=None):
             "name": "Balance",
             "color": get_colors("balance", 1)[0],
             "series_type": "line",
+            "borderColor": "white",
         }
         chart.add_data_set(g["balance"].values.tolist(), **series_opts)
 
@@ -536,6 +526,7 @@ def plot(summary, currency=None, width=None, height=None):
                 "color": get_colors(column, 1)[0],
                 "name": column.split("_")[-1].capitalize(),
                 "series_type": "line" if column == "balance" else "column",
+                "borderColor": "white",
             }
             chart.add_data_set(f[column].values.tolist(), **series_opts)
 

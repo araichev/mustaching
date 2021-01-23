@@ -1,5 +1,4 @@
-.tresorit
-ipynb/prototyping.ipynb
+notebooks/prototyping.ipynb
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
