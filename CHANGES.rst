@@ -1,9 +1,15 @@
 Changes
 ========
+3.1.3, 2021-01-23
+-----------------
+- Used Pandera for data validation.
+- Tweaked chart colors.
+
 
 3.1.2, 2020-09-06
 -----------------
-- Upgraded to Python 3.8
+- Upgraded to Python 3.8.
+
 
 3.1.1, 2019-04-03
 ------------------

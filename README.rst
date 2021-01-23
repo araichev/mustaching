@@ -7,10 +7,10 @@ Mustaching
 .. image:: https://travis-ci.org/araichev/mustaching.svg?branch=master
     :target: https://travis-ci.org/araichev/mustaching
 
-A tiny Python 3.6+ library inspired by Mr. Money Mustache to summarize and plot personal finance data given in a CSV file of transactions.
+A tiny Python 3.8+ library inspired by Mr. Money Mustache to summarize and plot personal finance data given in a CSV file of transactions.
 Uses Pandas and Python-Highcharts to do most of the work.
 
-.. image:: docs/_static/chart.png
+.. image:: docs/_static/chart.svg
     :width: 500px
     :alt: chart
 

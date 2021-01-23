@@ -82,15 +82,9 @@ SCHEMA = pa.DataFrameSchema({
 
 def validate_transactions(transactions: pd.DataFrame) -> pd.DataFrame:
     """
-    Raise a ValueError if the given DataFrame of transactions is invalid.
-    Otherwise do nothing.
-
-    Validation checks:
-
-    1. Transactions must contain :const:`REQUIRED_COLUMNS`.
-    2. Transactions filtered to :const:`REQUIRED_COLUMNS` must not be empty.
-    3. Transactions filtered to :const:`REQUIRED_COLUMNS` must be non null.
-
+    Raise a Pandera SchemaError if the given DataFrame of transactions does not
+    agree with the schema :const:SCHEMA.
+    Otherwise, return the DataFrame as is.
     """
     return SCHEMA.validate(transactions)
 
