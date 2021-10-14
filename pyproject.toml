@@ -11,6 +11,7 @@ pandas = ">=1, <2"
 colorlover = "<1"
 python-highcharts = "<1"
 pandera = "<1"
+plotly = "^5.3.1"
 
 [tool.poetry.dev-dependencies]
 jupyter = "^1.0"
