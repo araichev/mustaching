@@ -1,16 +1,9 @@
 Mustaching
 **********
-
-.. image:: http://mybinder.org/badge.svg
-    :target: http://mybinder.org:/repo/araichev/mustaching
-
-.. image:: https://travis-ci.org/araichev/mustaching.svg?branch=master
-    :target: https://travis-ci.org/araichev/mustaching
-
 A tiny Python 3.8+ library inspired by Mr. Money Mustache to summarize and plot personal finance data given in a CSV file of transactions.
-Uses Pandas and Python-Highcharts to do most of the work.
+Uses Pandas and Plotly to do most of the work.
 
-.. image:: docs/_static/chart.svg
+.. image:: docs/_static/plot.png
     :width: 500px
     :alt: chart
 
@@ -20,7 +13,7 @@ For full-featured double-entry bookkeeping in Python, use a different library, s
 
 Installation
 =============
-``poetry add mustaching``
+``poetry add git + ....``
 
 
 Usage
@@ -42,8 +35,7 @@ The business logic can be found in ``mustaching/main.py``
 
 Documentation
 ==============
-At `https://raichev.net/mustaching_docs <https://raichev.net/mustaching_docs>`_.
-
+At...
 
 Notes
 ========
