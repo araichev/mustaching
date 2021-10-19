@@ -8,13 +8,13 @@ CONVENTIONS:
         * comment (optional): string
 """
 import random
-from typing import Dict
+import itertools as it
 
 import pandas as pd
 import pandera as pa
 import numpy as np
-import colorlover as cl
-from highcharts import Highchart
+import plotly.graph_objects as pg
+import textwrap as tw
 
 
 def create_transactions(
@@ -182,7 +182,7 @@ def summarize(
     Given a DataFrame of transactions, slice it from the given start
     date to and including the given end date date (strings that Pandas
     can interpret, such as YYYYMMDD) if specified, and return a dictionary
-    with the keys 'by_none', 'by_period', 'by_category', 'by_period_and_category'
+    with the keys 'by_none', 'by_period', 'by_category', 'by_category_and_period'
     whose corresponding values are DataFrames with the following columns:
 
     ...
@@ -281,7 +281,7 @@ def summarize(
 
     # By period and category
     if has_category:
-        result["by_period_and_category"] = (
+        result["by_category_and_period"] = (
             f
             .set_index("date")
             .groupby([period, "category"])
@@ -305,7 +305,7 @@ def summarize(
             .drop(["period_income", "period_expense"], axis="columns")
         )
     else:
-        result["by_period_and_category"] = pd.DataFrame()
+        result["by_category_and_period"] = pd.DataFrame()
 
     if decimals is not None:
         new_result = {}
@@ -315,183 +315,267 @@ def summarize(
 
     return result
 
-
-def get_colors(column_name, n):
+def make_title(summary, header=None, currency=None):
     """
-    Return a list of ``n`` (positive integer) nice RGB color strings
-    to use for color coding the given column (string; one of
-    ``['income', 'expense', 'period_budget', 'balance']``.
-
-    NOTES:
-
-    - Returns at most 6 distinct colors. Repeats color beyond that.
-    - Helper function for :func:`plot`.
     """
+    g = summary["by_none"]
+    if currency == "$":
+        # Workaround a Plotly dollar sign bug;
+        # see https://stackoverflow.com/questions/40753033/plotly-js-using-two-dollar-signs-in-a-title-without-latex
+        currency = "&#36;"
 
-    # Clip n to range or sequential-type colors
-    low = 3
-    high = 6
-    k = np.clip(n, low, high)
-    kk = str(k)
+    return tw.dedent(
+        f"""
+        <b>{header}</b>
+        <br>{g.start_date.iat[0]:%Y-%m-%d} to {g.end_date.iat[0]:%Y-%m-%d}
+        <br>income = {g.income.iat[0]:,.0f}{currency} ·
+        expense = {g.expense.iat[0]:,.0f}{currency} ·
+        balance = {g.balance.iat[0]:,.0f}{currency} ·
+        savings pc = {g.savings_pc.iat[0]:.1f}%
+        """
+    )
 
-    # Build colors in clipped range
-    if column_name == "income":
-        colors = cl.scales[kk]["seq"]["GnBu"][::-1]
-    elif column_name == "expense":
-        colors = cl.scales[kk]["seq"]["OrRd"][::-1]
+def interleave(a, b):
+    return list(it.chain(*zip(a, b)))
+
+def _plot_by_none(summary, currency=None, height=None):
+    f = summary["by_none"].copy()
+
+    if currency is None:
+        currency = ""
+
+    hovertemplate = (
+        "<b>%{meta}</b><br>"
+        "%{y:,.0f}" + currency + "<br><extra></extra>"
+    )
+
+    # Make bars for income and expense
+    traces = [
+        pg.Bar(
+            y=f.income,
+            name="income",
+            meta="income",
+            marker_color="#636efa",
+            hovertemplate=hovertemplate,
+        ),
+        pg.Bar(
+            y=f.expense,
+            name="expense",
+            meta="expense",
+            marker_color="#ef553b",
+            hovertemplate=hovertemplate,
+        ),
+    ]
+
+    layout = dict(
+        title=make_title(summary, "Summary by none", currency),
+        xaxis=dict(title="", showticklabels=False),
+        yaxis=dict(separatethousands=True, title="value", ticksuffix=currency),
+        legend_title_text="",
+        legend_traceorder="normal",
+        template="plotly_white",
+        height=height,
+        barmode="group",
+        uniformtext_minsize=8,
+        uniformtext_mode='hide',
+    )
+    fig = pg.Figure(data=traces, layout=layout)
+
+    return fig
+
+def _plot_by_category(summary, currency=None, height=None):
+    if summary["by_category"].empty:
+        return pg.Figure()
+
+    f = summary["by_category"].copy()
+
+    if currency is None:
+        currency = ""
+
+    hovertemplate = (
+        "<b>%{meta}</b><br>"
+        "%{y:,.0f}" + currency + "<br>" +
+        "%{x}<extra></extra>"
+    )
+
+    # Make stacked bars for income and expense
+    traces = [
+        pg.Bar(
+            x=["income", "expense"],
+            y=interleave(g.income, g.expense),
+            name=category,
+            meta=category,
+            hovertemplate=hovertemplate,
+            text=pd.Series(interleave(
+                g.income_to_total_income_pc,
+                g.expense_to_total_expense_pc,
+            )).map(lambda x: f"{x:.0f}%"),
+            textposition="inside",
+        )
+        for category, g in f.groupby("category")
+    ]
+
+    layout = dict(
+        title=make_title(summary, "Summary by category", currency),
+        xaxis=dict(title=""),
+        yaxis=dict(separatethousands=True, title="value", ticksuffix=currency),
+        legend_title_text="",
+        legend_traceorder="normal",
+        template="plotly_white",
+        height=height,
+        barmode="stack",
+        uniformtext_minsize=8,
+        uniformtext_mode='hide',
+    )
+    fig = pg.Figure(data=traces, layout=layout)
+
+    return fig
+
+def _plot_by_period(summary, currency=None, height=None):
+    """
+    """
+    if currency is None:
+        currency = ""
+
+    hovertemplate = (
+        "<b>%{meta}</b><br>"
+        "%{y:,.0f}" + currency + "<br>" +
+        "%{x}<extra></extra>"
+    )
+
+    f = summary["by_period"].copy()
+    traces = [
+        pg.Bar(
+            x=f.date,
+            y=f.income,
+            name="income",
+            meta="income",
+            marker_color="#636efa",
+            hovertemplate=hovertemplate,
+        ),
+        pg.Bar(
+            x=f.date,
+            y=f.expense,
+            name="expense",
+            meta="expense",
+            marker_color="#ef553b",
+            hovertemplate=hovertemplate,
+        ),
+        pg.Scatter(
+            x=f.date,
+            y=f.cumulative_balance,
+            name="cumulative balance",
+            meta="cumulative balance",
+            line_color="black",
+            hovertemplate=hovertemplate,
+        )
+    ]
+
+    layout = dict(
+        title=make_title(summary, "Summary by period", currency),
+        xaxis=dict(title="period", tickformat="%Y-%m-%d", ticklabelmode="period"),
+        yaxis=dict(separatethousands=True, title="value", ticksuffix=currency),
+        legend_title_text="",
+        template="plotly_white",
+        height=height,
+    )
+    fig = pg.Figure(data=traces, layout=layout)
+
+    if f.date.nunique() < 20:
+        fig.update_xaxes(
+            tickvals=f.date.map(lambda x: x.strftime("%Y-%m-%d")).unique().tolist()
+        )
+
+    return fig
+
+def _plot_by_category_and_period(summary, currency=None, height=None):
+    """
+    Uses multi-category x-axis.
+    """
+    if summary["by_category"].empty:
+        return pg.Figure()
+
+    f1 = summary["by_category_and_period"].copy()
+    f0 = summary["by_period"].copy()
+
+    if currency is None:
+        currency = ""
+
+    hovertemplate = (
+        "<b>%{meta}</b><br>"
+        "%{y:,.0f}" + currency + "<br>" +
+        "%{x}<extra></extra>"
+    )
+
+    # Make stacked bars for income and expense grouped by date
+    f1["date"] = f1.date.map(lambda x: x.strftime("%Y-%m-%d"))
+    n = f1.date.nunique()
+    traces = [
+        pg.Bar(
+            x=[
+                interleave(g.date, g.date),
+                ["income", "expense"]*n,
+            ],
+            y=interleave(g.income, g.expense),
+            name=category,
+            meta=category,
+            hovertemplate=hovertemplate,
+            text=pd.Series(interleave(
+                g.income_to_period_income_pc,
+                g.expense_to_period_expense_pc,
+            )).map(lambda x: f"{x:.0f}%"),
+            textposition="inside",
+        )
+        for category, g in f1.groupby("category")
+    ]
+    # Make line plot of cumulative balance;
+    # hack it to match the x-axis of the stacked bars
+    f0 = summary["by_period"].copy()
+    f0["date"] = f0.date.map(lambda x: x.strftime("%Y-%m-%d"))
+    traces.append(
+        pg.Scatter(
+            x=[interleave(f0.date, f0.date), ["income", "expense"]*n],
+            y=interleave([np.nan for __ in f0.cumulative_balance], f0.cumulative_balance),
+            name="cumulative balance",
+            meta="cumulative balance",
+            line_color="black",
+            hovertemplate=hovertemplate,
+            connectgaps=True,
+        )
+    )
+
+    # Set layout
+    if n > 10:
+        width = 100*n
     else:
-        colors = ["#555" for __ in range(k)]
+        width = None
 
-    # Extend colors to unclipped range as required
-    if n <= 0:
-        colors = []
-    elif 0 < n < low:
-        colors = colors[:n]
-    elif n > high:
-        # Repeat colors
-        q, r = divmod(n, k)
-        colors = colors * q + colors[:r]
+    layout = dict(
+        title=make_title(summary, "Summary by category and period", currency),
+        xaxis=dict(title="period"),
+        yaxis=dict(separatethousands=True, title="value", ticksuffix=currency),
+        legend_title_text="",
+        legend_traceorder="normal",
+        template="plotly_white",
+        width=width,
+        height=height,
+        barmode="stack",
+        uniformtext_minsize=8,
+        uniformtext_mode='hide',
+    )
+    fig = pg.Figure(data=traces, layout=layout)
 
-    return colors
+    return fig
 
-
-# def plot(summary, currency=None, width=None, height=None):
-#     """
-#     Given a transaction summary of the form output by :func:`summarize`,
-#     plot it using Python HighCharts.
-#     Include the given currency units (string; e.g. 'NZD') in the y-axis
-#     label.
-#     Override the default chart width and height, if desired.
-#     """
-#     f = summary.copy()
-#     chart = Highchart()
-
-#     # Initialize chart options.
-#     # HighCharts kludge: use categorical x-axis to display dates properly.
-#     dates = f["date"].map(lambda x: x.strftime("%Y-%m-%d")).unique()
-#     dates = sorted(dates.tolist())
-
-#     if currency is not None:
-#         y_text = "Money ({!s})".format(currency)
-#     else:
-#         currency = ""
-#         y_text = "Money"
-
-#     chart_opts = {
-#         "lang": {"thousandsSep": ","},
-#         "chart": {"zoomType": "xy"},
-#         "title": {"text": "Account Summary"},
-#         "xAxis": {"type": "category", "categories": dates},
-#         "yAxis": {"title": {"text": y_text}, "reversedStacks": False},
-#         "tooltip": {"headerFormat": "<b>{point.key}</b><table>", "useHTML": True},
-#         "plotOptions": {
-#             "column": {"pointPadding": 0, "borderWidth": 1, "borderColor": "#333333"}
-#         },
-#         "credits": {"enabled": False},
-#     }
-
-#     if width is not None:
-#         chart_opts["chart"]["width"] = width
-
-#     if height is not None:
-#         chart_opts["chart"]["height"] = height
-
-#     if "category" in f.columns:
-#         # Update chart options
-#         chart_opts["plotOptions"]["series"] = {"stacking": "normal"}
-#         chart_opts["tooltip"]["pointFormat"] = (
-#             """
-#           <tr>
-#           <td style="padding-right:1em">{series.name}
-#           ({point.percentage:.0f}%)</td>
-#           <td style="text-align:right">{point.y:,.0f} """
-#             + currency
-#             + """
-#           </td>
-#           </tr>
-#           """
-#         )
-#         chart_opts["tooltip"]["footerFormat"] = (
-#             """
-#           <tr>
-#           <td style="padding-right:1em">Stack total</td>
-#           <td style="text-align:right">{point.total:,.0f} """
-#             + currency
-#             + """
-#           </td>
-#           </tr></table>
-#           """
-#         )
-#         chart_opts["tooltip"]["shared"] = False
-
-#         # Create data series.
-#         # Split income and expense into two stacks, each split by category.
-#         for column in ["income", "expense"]:
-#             # Sort categories by greatest value to least
-#             g = (
-#                 f.groupby("category")
-#                 .sum()
-#                 .reset_index()
-#                 .sort_values(column, ascending=False)
-#             )
-#             categories = g.loc[g[column] > 0, "category"].unique()
-#             n = len(categories)
-#             colors = get_colors(column, n)
-#             cond1 = f[column] > 0
-#             for category, color in zip(categories, colors):
-#                 cond2 = (cond1 | f[column].isnull()) & (f["category"] == category)
-#                 g = f[cond2].copy()
-#                 name = "{!s} {!s}".format(column.capitalize(), category)
-#                 series_opts = {
-#                     "name": name,
-#                     "color": color,
-#                     "series_type": "column",
-#                     "stack": column,
-#                     "borderColor": "white",
-#                 }
-#                 chart.add_data_set(g[column].values.tolist(), **series_opts)
-
-#         # Aggregate balance
-#         def my_agg(group):
-#             d = {}
-#             d["balance"] = group["balance"].iat[0]
-#             return pd.Series(d)
-
-#         g = f.groupby("date")["balance"].first().reset_index()
-#         series_opts = {
-#             "name": "Balance",
-#             "color": get_colors("balance", 1)[0],
-#             "series_type": "line",
-#             "borderColor": "white",
-#         }
-#         chart.add_data_set(g["balance"].values.tolist(), **series_opts)
-
-#     else:
-#         # Update chart options
-#         chart_opts["tooltip"]["pointFormat"] = (
-#             """
-#           <tr>
-#           <td style="padding-right:1em">{series.name}</td>
-#           <td style="text-align:right">{point.y:,.0f} """
-#             + currency
-#             + """
-#           </td>
-#           </tr>
-#           """
-#         )
-#         chart_opts["tooltip"]["footerFormat"] = "</table>"
-#         chart_opts["tooltip"]["shared"] = True
-
-#         # Create data series
-#         for column in ["income", "expense", "balance"]:
-#             series_opts = {
-#                 "color": get_colors(column, 1)[0],
-#                 "name": column.split("_")[-1].capitalize(),
-#                 "series_type": "line" if column == "balance" else "column",
-#                 "borderColor": "white",
-#             }
-#             chart.add_data_set(f[column].values.tolist(), **series_opts)
-
-#     chart.set_dict_options(chart_opts)
-
-#     return chart
+def plot(summary, currency=None, height=None):
+    if summary["by_category"].empty:
+        result = {
+            "by_none": _plot_by_none(summary, currency, height),
+            "by_period": _plot_by_period(summary, currency, height),
+        }
+    else:
+        result = {
+            "by_category": _plot_by_category(summary, currency, height),
+            "by_category_and_period": _plot_by_category_and_period(summary, currency, height),
+        }
+    return result

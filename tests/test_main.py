@@ -1,7 +1,4 @@
-from itertools import product
-
 import pytest
-import highcharts
 import pandera as pa
 
 from .context import mustaching
@@ -53,7 +50,7 @@ def test_summarize():
         "by_none",
         "by_period",
         "by_category",
-        "by_period_and_category",
+        "by_category_and_period",
     }
 
     assert set(s["by_none"].columns) == {
@@ -92,7 +89,7 @@ def test_summarize():
     assert s["by_category"].income_to_total_income_pc.sum() == pytest.approx(100)
     assert s["by_category"].expense_to_total_expense_pc.sum() == pytest.approx(100)
 
-    assert set(s["by_period_and_category"].columns) == {
+    assert set(s["by_category_and_period"].columns) == {
         "date",
         "category",
         "income",
@@ -102,7 +99,7 @@ def test_summarize():
         "expense_to_period_income_pc",
         "expense_to_period_expense_pc",
     }
-    for __, group in s["by_period_and_category"].groupby("date"):
+    for __, group in s["by_category_and_period"].groupby("date"):
         assert group.income_to_period_income_pc.sum() == pytest.approx(100)
         assert group.expense_to_period_expense_pc.sum() == pytest.approx(100)
 
@@ -112,20 +109,16 @@ def test_summarize():
 
     s = summarize(t.drop(["category"], axis="columns"))
     assert s["by_category"].empty
-    assert s["by_period_and_category"].empty
-
-
-def test_get_colors():
-    n = 300
-    c = get_colors("income", n)
-    assert len(c) == n
-    assert len(set(c)) == 6
+    assert s["by_category_and_period"].empty
 
 
 def test_plot():
-    pass
-    # t = create_transactions("2017-01-01", "2017-12-31")
-    # for freq, by_category in product([None, "W"], [True, False]):
-    #     s = summarize(t, freq=freq, by_category=by_category)
-    #     p = plot(s)
-    #     assert isinstance(p, highcharts.highcharts.highcharts.Highchart)
+    t = create_transactions("2017-01-01", "2017-12-31")
+
+    summary = summarize(t, freq="MS")
+    p = plot(summary, currency="$")
+    assert set(p.keys()) == {"by_category", "by_category_and_period"}
+
+    summary = summarize(t.drop("category", axis="columns"), freq="MS")
+    p = plot(summary, currency="$")
+    assert set(p.keys()) == {"by_none", "by_period"}
