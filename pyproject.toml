@@ -8,9 +8,8 @@ license = "MIT"
 [tool.poetry.dependencies]
 python = ">=3.8, <4.0"
 pandas = ">=1, <2"
-colorlover = "<1"
-python-highcharts = "<1"
 pandera = "<1"
+plotly = "<6"
 
 [tool.poetry.dev-dependencies]
 jupyter = "^1.0"
