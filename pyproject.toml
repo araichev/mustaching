@@ -1,12 +1,12 @@
 [tool.poetry]
 name = "mustaching"
-version = "3.1.3"
-description = "A Python 3.8+ library inspired by Mr. Money Mustache to summarize and plot personal finance data given in a CSV file of transactions."
+version = "4.0.0"
+description = "A Python 3.9+ library inspired by Mr. Money Mustache to summarize and plot personal finance data given in a CSV file of transactions."
 authors = ["Alex Raichev <alex@raichev.net>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = ">=3.8, <4.0"
+python = ">=3.9, <4.0"
 pandas = ">=1, <2"
 pandera = "<1"
 plotly = "<6"

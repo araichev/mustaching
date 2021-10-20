@@ -1,12 +1,3 @@
-"""
-CONVENTIONS:
-    - A DataFrame of *transactions* is one with the following columns:
-        * date: Numpy datetime
-        * amount: float
-        * description (optional): string
-        * category (optional): Pandas 'category'
-        * comment (optional): string
-"""
 import random
 import itertools as it
 
@@ -18,13 +9,17 @@ import textwrap as tw
 
 
 def create_transactions(
-    date1, date2, freq="12H", income_categories=None, expense_categories=None
-):
+    date1: str,
+    date2: str,
+    freq: str="12H",
+    income_categories: list[str]=None,
+    expense_categories: list[str]=None,
+) -> pd.DataFrame:
     """
     Create a DataFrame of sample transactions between the given dates
     (date strings that Pandas can interpret, such as YYYYMMDD) and at
     the given Pandas frequency.
-    Include all the columns in the set ``COLUMNS``.
+    The columns will be all those readable by the function :func:`read_transactions`.
     Each positive transaction will be assigned a income category from
     the given list ``income_categories``, and each negative transaction
     will be assigned a expense category from the given list
@@ -72,6 +67,7 @@ def create_transactions(
 
     return f
 
+
 SCHEMA = pa.DataFrameSchema({
     "date": pa.Column(pa.String),
     "amount": pa.Column(pa.Float, coerce=True),
@@ -88,7 +84,8 @@ def validate_transactions(transactions: pd.DataFrame) -> pd.DataFrame:
     """
     return SCHEMA.validate(transactions)
 
-def read_transactions(path, date_format=None, **kwargs):
+
+def read_transactions(path: str, date_format: str=None, **kwargs) -> pd.DataFrame:
     """
     Read a CSV file of transactions located at the given path (string
     or Path object), parse the date and category, and return the
@@ -127,22 +124,23 @@ def read_transactions(path, date_format=None, **kwargs):
 
 
 def insert_repeating(
-    transactions,
-    amount,
-    freq,
-    description=None,
-    category=None,
-    comment=None,
-    start_date=None,
-    end_date=None,
-):
+    transactions: pd.DataFrame,
+    amount: float,
+    freq: str,
+    description: str=None,
+    category: str=None,
+    comment: str=None,
+    start_date: str=None,
+    end_date: str=None,
+) -> pd.DataFrame:
     """
     Given a DataFrame of transactions, add to it a repeating transaction
     at the given frequency for the given amount with the given optional
     description, category, and comment.
     Restrict the repeating transaction to the given start and end dates
-    (date objects), inclusive, if given; otherwise repeat from the first
-    transaction date to the last.
+    (date objects), inclusive.
+    If no start date is given, then repeat from the first transaction date.
+    If no end date is given, then repeat to the last transaction date.
     Drop duplicate rows and return the resulting DataFrame.
     """
     f = transactions.copy()
@@ -172,23 +170,71 @@ def insert_repeating(
 
 
 def summarize(
-    transactions,
-    freq="MS",
-    decimals=2,
-    start_date=None,
-    end_date=None,
-):
+    transactions: pd.DataFrame,
+    freq: str="MS",
+    decimals: int=2,
+    start_date: str=None,
+    end_date: str=None,
+) -> dict:
     """
     Given a DataFrame of transactions, slice it from the given start
     date to and including the given end date date (strings that Pandas
     can interpret, such as YYYYMMDD) if specified, and return a dictionary
     with the keys 'by_none', 'by_period', 'by_category', 'by_category_and_period'
-    whose corresponding values are DataFrames with the following columns:
+    whose corresponding values are DataFrames with the following columns.
 
-    ...
+    - key "by_none"
+        * ``"start_date"``: first transaction date
+        * ``"end_date"``: last transaction date
+        * ``"income"``: sum of positive transaction amounts for the date range
+        * ``"expense"``: absolute value of sum of negative transaction amounts for the
+          date range
+        * ``"balance"``: income - expense
+        * ``"savings_pc"``: 100 * balance / income
 
-    Round all values to the given number of decimals.
-    Set ``decimals=None`` to avoid rounding.
+    - key "by_period"
+        * ``"date"``: date of period after date range has been resampled at
+          frequency ``freq``
+        * ``"income"``: sum of positive transaction amounts for the period
+        * ``"expense"``: absolute value of sum of negative transactions for the period
+        * ``"balance"``: income - expense for the period
+        * ``"savings_pc``: 100 * balance / income
+        * ``"cumulative_income"``: income plus the incomes of all previous periods
+        * ``"cumulative_balance"``: balance plus the balances of all previous periods
+        * ``"cumulative_savings_pc"``: 100 * cumulative_balance / cumulative_income
+
+    - key "by_category"
+        * ``"category"``: category of transactions
+        * ``"income"``: sum of positive transaction amounts for the category and
+          date range
+        * ``"expense"``: absolute value of sum of negative transaction amounts for the
+          category and date range
+        * ``"balance"``: income - expense
+        * ``"income_to_total_income_pc"``: 100 * income / (total income for date range)
+        * ``"expense_to_total_income_pc"``: 100 * expense / (total income for date range)
+        * ``"expense_to_total_expense_pc"``: 100 * expense / (total expense for date range)
+        * ``"daily_avg_balance"``: sum of all amounts for category divided by the number
+          of days in the date range
+        * ``"weekly_avg_balance"``: sum of all amounts for category divided by the number
+          of weeks in the date range
+        * ``"monthly_avg_balance"``: sum of all amounts for category divided by the number
+          of months in the date range
+        * ``"yearly_avg_balance"``: sum of all amounts for category divided by the number
+          of years in the date range
+
+    - key "by_category_and_period"
+        * ``"date"``: date of period after date range has been resampled at
+          frequency ``freq``
+        * ``"category"``: category of transactions
+        * ``"income"``: sum of positive transaction amounts for the period and category
+        * ``"expense"``: absolute value of sum of negative transactions for the period
+          and category
+        * ``"balance"``: income - expense for the period and category
+        * ``"income_to_period_income_pc"``: 100 * income / (total income for period)
+        * ``"expense_to_period_income_pc"``: 100 * expense / (total income for period)
+        * ``"expense_to_period_expense_pc"``: 100 * expense / (total expense for period)
+
+    Round all values to the given number of decimals, or set ``decimals=None`` to avoid rounding.
     """
     f = transactions.copy()
     if "category" in f.columns:
@@ -315,8 +361,13 @@ def summarize(
 
     return result
 
-def make_title(summary, header=None, currency=None):
+
+def make_title(summary: pd.DataFrame, header: str=None, currency: str=None) -> str:
     """
+    Helper function for :func:`plot`.
+    Given a summary of the form output by the function :func:`summarize`,
+    return a string with the given header and currency and a summary basic
+    summary of transactions, which acts as a title for plot.
     """
     g = summary["by_none"]
     if currency == "$":
@@ -335,10 +386,24 @@ def make_title(summary, header=None, currency=None):
         """
     )
 
-def interleave(a, b):
+
+def interleave(a: list, b: list) -> list:
+    """
+    Given two lists a_0, a_1,...,b_n and b_0, b_1,...,b_n of length n,
+    return the interleaved list a_0, b_0, a_1, b_1,...,a_n, b_n of length 2n.
+    """
     return list(it.chain(*zip(a, b)))
 
-def _plot_by_none(summary, currency=None, height=None):
+
+def _plot_by_none(
+    summary: pd.DataFrame,
+    currency: str=None,
+    height: int=None,
+) -> dict:
+
+    """
+    Helper function for :func:`plot`.
+    """
     f = summary["by_none"].copy()
 
     if currency is None:
@@ -383,7 +448,16 @@ def _plot_by_none(summary, currency=None, height=None):
 
     return fig
 
-def _plot_by_category(summary, currency=None, height=None):
+
+def _plot_by_category(
+    summary: pd.DataFrame,
+    currency: str=None,
+    height: int=None,
+) -> dict:
+
+    """
+    Helper function for :func:`plot`.
+    """
     if summary["by_category"].empty:
         return pg.Figure()
 
@@ -431,8 +505,13 @@ def _plot_by_category(summary, currency=None, height=None):
 
     return fig
 
-def _plot_by_period(summary, currency=None, height=None):
+def _plot_by_period(
+    summary: pd.DataFrame,
+    currency: str=None,
+    height: int=None,
+) -> dict:
     """
+    Helper function for :func:`plot`.
     """
     if currency is None:
         currency = ""
@@ -488,9 +567,16 @@ def _plot_by_period(summary, currency=None, height=None):
 
     return fig
 
-def _plot_by_category_and_period(summary, currency=None, height=None):
+
+def _plot_by_category_and_period(
+    summary: pd.DataFrame,
+    currency: str=None,
+    height: int=None,
+) -> dict:
     """
-    Uses multi-category x-axis.
+    Helper function for :func:`plot`.
+    Use multi-category x-axis for this plot as a workaround to Plotly's lack
+    of support for grouped and stacked bar charts.
     """
     if summary["by_category"].empty:
         return pg.Figure()
@@ -567,7 +653,7 @@ def _plot_by_category_and_period(summary, currency=None, height=None):
 
     return fig
 
-def plot(summary, currency=None, height=None):
+def plot(summary: pd.DataFrame, currency: str=None, height: int=None) -> dict:
     if summary["by_category"].empty:
         result = {
             "by_none": _plot_by_none(summary, currency, height),

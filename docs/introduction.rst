@@ -1,9 +1,9 @@
 Introduction
 ************
-A tiny Python 3.6+ library inspired by Mr. Money Mustache to summarize and plot personal finance data given in a CSV file of transactions.
-Uses Pandas and Python-Highcharts to do most of the work.
+A tiny Python 3.9+ library inspired by Mr. Money Mustache to summarize and plot personal finance data given in a CSV file of transactions.
+Uses Pandas and Plotly to do most of the work.
 
-.. image:: _static/chart.svg
+.. image:: _static/plot.png
     :width: 500px
     :alt: chart
 
@@ -13,12 +13,12 @@ For full-featured double-entry bookkeeping in Python, use a different library, s
 
 Installation
 =============
-``pip install mustaching``
+Create a Python 3.9+ virtual environment and run ``poetry add mustaching``.
 
 
 Usage
 =========
-Play with the IPython notebook at ``ipynb/examples.ipynb``.
+Play with the Jupyter notebook at ``notebooks/examples.ipynb``.
 You can even do so online by clicking the Binder badge above.
 Using Binder you can also upload your own transaction data into the notebook, but consider first `Binder's warning about private data <http://docs.mybinder.org/faq>`_.
 
@@ -35,7 +35,7 @@ The business logic can be found in ``mustaching/main.py``
 
 Documentation
 ==============
-At `https://raichev.net/mustaching_docs <https://raichev.net/mustaching_docs>`_.
+At `raichev.net/mustaching_docs <https://raichev.net/mustaching_docs>`_.
 
 
 Notes
