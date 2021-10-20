@@ -41,7 +41,7 @@ The business logic can be found in ``mustaching/main.py``
 
 Documentation
 ==============
-At `raichev.net/mustaching_docs <https://raichev.net/mustaching_docs>`_.
+At `araichev.github.io/mustaching_docs/ <https://araichev.github.io/mustaching_docs/>`_.
 
 
 Notes
