@@ -58,6 +58,11 @@ Authors
 Changes
 ========
 
+4.0.1, 2021-10-21
+-----------------
+- In ``summarize()``, dropped unused categories *after* slicing to the given date range.
+
+
 4.0.0, 2021-10-20
 -----------------
 - Upgraded to Python 3.9.
