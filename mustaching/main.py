@@ -179,9 +179,10 @@ def summarize(
     """
     Given a DataFrame of transactions, slice it from the given start
     date to and including the given end date date (strings that Pandas
-    can interpret, such as YYYYMMDD) if specified, and return a dictionary
-    with the keys 'by_none', 'by_period', 'by_category', 'by_category_and_period'
-    whose corresponding values are DataFrames with the following columns.
+    can interpret, such as YYYYMMDD) if specified, drop unused categories,
+    and return a dictionary with the keys 'by_none', 'by_period', 'by_category',
+    'by_category_and_period' whose corresponding values are DataFrames with the
+    following columns.
 
     - key "by_none"
         * ``"start_date"``: first transaction date
@@ -237,14 +238,8 @@ def summarize(
     Round all values to the given number of decimals, or set ``decimals=None`` to avoid rounding.
     """
     f = transactions.copy()
-    if "category" in f.columns:
-        has_category = True
-        # Removed unused categories
-        f.category = f.category.cat.remove_unused_categories()
-    else:
-        has_category = False
 
-    # Set start and end dates
+    # Filter to start and end dates
     if start_date is None:
         start_date = f["date"].min()
     else:
@@ -254,8 +249,15 @@ def summarize(
     else:
         end_date = pd.to_datetime(end_date)
 
-    # Filter to start and end dates
     f = f.loc[lambda x: (x.date >= start_date) & (x.date <= end_date)].copy()
+
+    if "category" in f.columns:
+        has_category = True
+        # Removed unused categories
+        f.category = f.category.cat.remove_unused_categories()
+    else:
+        has_category = False
+
 
 
     # Create income and expense columns
