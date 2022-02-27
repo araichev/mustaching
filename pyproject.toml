@@ -1,23 +1,23 @@
 [tool.poetry]
 name = "mustaching"
-version = "4.0.1"
+version = "4.0.2"
 description = "A Python 3.9+ library inspired by Mr. Money Mustache to summarize and plot personal finance data given in a CSV file of transactions."
 authors = ["Alex Raichev <alex@raichev.net>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = ">=3.9, <4.0"
-pandas = ">=1, <2"
-pandera = "<1"
-plotly = "<6"
+python = ">=3.9, <4"
+pandas = ">=1"
+pandera = ">=0"
+plotly = ">=5"
 
 [tool.poetry.dev-dependencies]
-jupyter = "^1.0"
-pytest = "^6"
-sphinx = "^4"
-pre-commit = "^2"
-black = "^21"
-publish-sphinx-docs = "^1"
+jupyter = ">=1.0"
+pytest = ">=6"
+sphinx = ">=4"
+pre-commit = ">=2"
+black = ">=21"
+publish-sphinx-docs = ">=1"
 
 [build-system]
 requires = ["poetry>=1.0.0"]

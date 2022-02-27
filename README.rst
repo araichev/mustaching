@@ -58,6 +58,11 @@ Authors
 Changes
 ========
 
+4.0.2, 2022-02-27
+-----------------
+- Updated dependencies, removing version caps.
+
+
 4.0.1, 2021-10-21
 -----------------
 - In ``summarize()``, dropped unused categories *after* slicing to the given date range.
