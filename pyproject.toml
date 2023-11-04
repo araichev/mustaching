@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "mustaching"
-version = "4.0.2"
+version = "4.0.3"
 description = "A Python 3.9+ library inspired by Mr. Money Mustache to summarize and plot personal finance data given in a CSV file of transactions."
 authors = ["Alex Raichev <alex@raichev.net>"]
 license = "MIT"
@@ -22,3 +22,8 @@ publish-sphinx-docs = ">=1"
 [build-system]
 requires = ["poetry>=1.0.0"]
 build-backend = "poetry.masonry.api"
+
+[tool.ruff]
+# Enable pycodestyle (`E`) and Pyflakes (`F`) codes by default.
+select = ["E", "F"]
+ignore = ["F403"]
