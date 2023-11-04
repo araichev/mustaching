@@ -60,6 +60,7 @@ Changes
 4.0.3, 2023-11-04
 -----------------
 - Updated dependencies.
+- Added Github action for testing.
 
 4.0.2, 2022-02-27
 -----------------
