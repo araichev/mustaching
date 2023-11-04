@@ -11,9 +11,9 @@ import textwrap as tw
 def create_transactions(
     date1: str,
     date2: str,
-    freq: str="12H",
-    income_categories: list[str]=None,
-    expense_categories: list[str]=None,
+    freq: str = "12H",
+    income_categories: list[str] = None,
+    expense_categories: list[str] = None,
 ) -> pd.DataFrame:
     """
     Create a DataFrame of sample transactions between the given dates
@@ -68,13 +68,16 @@ def create_transactions(
     return f
 
 
-SCHEMA = pa.DataFrameSchema({
-    "date": pa.Column(pa.String),
-    "amount": pa.Column(pa.Float, coerce=True),
-    "description": pa.Column(pa.String, required=False, coerce=True),
-    "category": pa.Column(pa.String, required=False, coerce=True),
-    "comment": pa.Column(pa.String, required=False, coerce=True, nullable=True),
-})
+SCHEMA = pa.DataFrameSchema(
+    {
+        "date": pa.Column(pa.String),
+        "amount": pa.Column(pa.Float, coerce=True),
+        "description": pa.Column(pa.String, required=False, coerce=True),
+        "category": pa.Column(pa.String, required=False, coerce=True),
+        "comment": pa.Column(pa.String, required=False, coerce=True, nullable=True),
+    }
+)
+
 
 def validate_transactions(transactions: pd.DataFrame) -> pd.DataFrame:
     """
@@ -85,7 +88,7 @@ def validate_transactions(transactions: pd.DataFrame) -> pd.DataFrame:
     return SCHEMA.validate(transactions)
 
 
-def read_transactions(path: str, date_format: str=None, **kwargs) -> pd.DataFrame:
+def read_transactions(path: str, date_format: str = None, **kwargs) -> pd.DataFrame:
     """
     Read a CSV file of transactions located at the given path (string
     or Path object), parse the date and category, and return the
@@ -127,11 +130,11 @@ def insert_repeating(
     transactions: pd.DataFrame,
     amount: float,
     freq: str,
-    description: str=None,
-    category: str=None,
-    comment: str=None,
-    start_date: str=None,
-    end_date: str=None,
+    description: str = None,
+    category: str = None,
+    comment: str = None,
+    start_date: str = None,
+    end_date: str = None,
 ) -> pd.DataFrame:
     """
     Given a DataFrame of transactions, add to it a repeating transaction
@@ -171,10 +174,10 @@ def insert_repeating(
 
 def summarize(
     transactions: pd.DataFrame,
-    freq: str="MS",
-    decimals: int=2,
-    start_date: str=None,
-    end_date: str=None,
+    freq: str = "MS",
+    decimals: int = 2,
+    start_date: str = None,
+    end_date: str = None,
 ) -> dict:
     """
     Given a DataFrame of transactions, slice it from the given start
@@ -212,16 +215,18 @@ def summarize(
           category and date range
         * ``"balance"``: income - expense
         * ``"income_to_total_income_pc"``: 100 * income / (total income for date range)
-        * ``"expense_to_total_income_pc"``: 100 * expense / (total income for date range)
-        * ``"expense_to_total_expense_pc"``: 100 * expense / (total expense for date range)
+        * ``"expense_to_total_income_pc"``:
+          100 * expense / (total income for date range)
+        * ``"expense_to_total_expense_pc"``:
+          100 * expense / (total expense for date range)
         * ``"daily_avg_balance"``: sum of all amounts for category divided by the number
           of days in the date range
-        * ``"weekly_avg_balance"``: sum of all amounts for category divided by the number
-          of weeks in the date range
-        * ``"monthly_avg_balance"``: sum of all amounts for category divided by the number
-          of months in the date range
-        * ``"yearly_avg_balance"``: sum of all amounts for category divided by the number
-          of years in the date range
+        * ``"weekly_avg_balance"``: sum of all amounts for category divided by the
+          number of weeks in the date range
+        * ``"monthly_avg_balance"``: sum of all amounts for category divided by the
+          number of months in the date range
+        * ``"yearly_avg_balance"``: sum of all amounts for category divided by the
+          number of years in the date range
 
     - key "by_category_and_period"
         * ``"date"``: date of period after date range has been resampled at
@@ -235,7 +240,8 @@ def summarize(
         * ``"expense_to_period_income_pc"``: 100 * expense / (total income for period)
         * ``"expense_to_period_expense_pc"``: 100 * expense / (total expense for period)
 
-    Round all values to the given number of decimals, or set ``decimals=None`` to avoid rounding.
+    Round all values to the given number of decimals, or set ``decimals=None``
+    to avoid rounding.
     """
     f = transactions.copy()
 
@@ -258,8 +264,6 @@ def summarize(
     else:
         has_category = False
 
-
-
     # Create income and expense columns
     f["income"] = f.amount.map(lambda x: x if x > 0 else 0)
     f["expense"] = f.amount.map(lambda x: -x if x < 0 else 0)
@@ -277,13 +281,12 @@ def summarize(
 
     # By none
     result["by_none"] = (
-        f
-        .assign(
+        f.assign(
             start_date=start_date,
             end_date=end_date,
         )
         .groupby(["start_date", "end_date"])
-        .sum()
+        .sum(numeric_only=True)
         .reset_index()
         .assign(
             savings_pc=lambda x: 100 * x.balance / x.income,
@@ -294,30 +297,32 @@ def summarize(
     # By period
     period = pd.Grouper(freq=freq, label="left", closed="left")
     result["by_period"] = (
-        f
-        .set_index("date")
+        f.set_index("date")
         .groupby(period)
-        .sum()
+        .sum(numeric_only=True)
         .reset_index()
         .assign(
             savings_pc=lambda x: 100 * x.balance / x.income,
             cumulative_income=lambda x: x.income.cumsum(),
             cumulative_balance=lambda x: x.balance.cumsum(),
-            cumulative_savings_pc=lambda x: 100 * x.cumulative_balance / x.cumulative_income,
+            cumulative_savings_pc=lambda x: 100
+            * x.cumulative_balance
+            / x.cumulative_income,
         )
     )
 
     # By category
     if has_category:
         result["by_category"] = (
-            f
-            .groupby("category")
-            .sum()
+            f.groupby("category")
+            .sum(numeric_only=True)
             .reset_index()
             .assign(
                 income_to_total_income_pc=lambda x: 100 * x.income / total["income"],
                 expense_to_total_income_pc=lambda x: 100 * x.expense / total["income"],
-                expense_to_total_expense_pc=lambda x: 100 * x.expense / total["expense"],
+                expense_to_total_expense_pc=lambda x: 100
+                * x.expense
+                / total["expense"],
                 daily_avg_balance=lambda x: x.balance / num_days,
                 weekly_avg_balance=lambda x: x.balance / num_weeks,
                 monthly_avg_balance=lambda x: x.balance / num_months,
@@ -330,25 +335,28 @@ def summarize(
     # By period and category
     if has_category:
         result["by_category_and_period"] = (
-            f
-            .set_index("date")
+            f.set_index("date")
             .groupby([period, "category"])
-            .sum()
+            .sum(numeric_only=True)
             .reset_index()
             # Merge in period totals
             .merge(
                 result["by_period"]
                 .filter(["date", "income", "expense"])
-                .rename(columns={
-                    "income": "period_income",
-                    "expense": "period_expense",
-                })
+                .rename(
+                    columns={
+                        "income": "period_income",
+                        "expense": "period_expense",
+                    }
+                )
             )
             # Compute period-category percentages
             .assign(
                 income_to_period_income_pc=lambda x: 100 * x.income / x.period_income,
                 expense_to_period_income_pc=lambda x: 100 * x.expense / x.period_income,
-                expense_to_period_expense_pc=lambda x: 100 * x.expense / x.period_expense,
+                expense_to_period_expense_pc=lambda x: 100
+                * x.expense
+                / x.period_expense,
             )
             .drop(["period_income", "period_expense"], axis="columns")
         )
@@ -364,7 +372,7 @@ def summarize(
     return result
 
 
-def make_title(summary: pd.DataFrame, header: str=None, currency: str=None) -> str:
+def make_title(summary: pd.DataFrame, header: str = None, currency: str = None) -> str:
     """
     Helper function for :func:`plot`.
     Given a summary of the form output by the function :func:`summarize`,
@@ -399,10 +407,9 @@ def interleave(a: list, b: list) -> list:
 
 def _plot_by_none(
     summary: pd.DataFrame,
-    currency: str=None,
-    height: int=None,
+    currency: str = None,
+    height: int = None,
 ) -> dict:
-
     """
     Helper function for :func:`plot`.
     """
@@ -411,10 +418,7 @@ def _plot_by_none(
     if currency is None:
         currency = ""
 
-    hovertemplate = (
-        "<b>%{meta}</b><br>"
-        "%{y:,.0f}" + currency + "<br><extra></extra>"
-    )
+    hovertemplate = "<b>%{meta}</b><br>" "%{y:,.0f}" + currency + "<br><extra></extra>"
 
     # Make bars for income and expense
     traces = [
@@ -444,7 +448,7 @@ def _plot_by_none(
         height=height,
         barmode="group",
         uniformtext_minsize=8,
-        uniformtext_mode='hide',
+        uniformtext_mode="hide",
     )
     fig = pg.Figure(data=traces, layout=layout)
 
@@ -453,10 +457,9 @@ def _plot_by_none(
 
 def _plot_by_category(
     summary: pd.DataFrame,
-    currency: str=None,
-    height: int=None,
+    currency: str = None,
+    height: int = None,
 ) -> dict:
-
     """
     Helper function for :func:`plot`.
     """
@@ -469,9 +472,7 @@ def _plot_by_category(
         currency = ""
 
     hovertemplate = (
-        "<b>%{meta}</b><br>"
-        "%{y:,.0f}" + currency + "<br>" +
-        "%{x}<extra></extra>"
+        "<b>%{meta}</b><br>" "%{y:,.0f}" + currency + "<br>" + "%{x}<extra></extra>"
     )
 
     # Make stacked bars for income and expense
@@ -482,10 +483,12 @@ def _plot_by_category(
             name=category,
             meta=category,
             hovertemplate=hovertemplate,
-            text=pd.Series(interleave(
-                g.income_to_total_income_pc,
-                g.expense_to_total_expense_pc,
-            )).map(lambda x: f"{x:.0f}%"),
+            text=pd.Series(
+                interleave(
+                    g.income_to_total_income_pc,
+                    g.expense_to_total_expense_pc,
+                )
+            ).map(lambda x: f"{x:.0f}%"),
             textposition="inside",
         )
         for category, g in f.groupby("category")
@@ -501,16 +504,17 @@ def _plot_by_category(
         height=height,
         barmode="stack",
         uniformtext_minsize=8,
-        uniformtext_mode='hide',
+        uniformtext_mode="hide",
     )
     fig = pg.Figure(data=traces, layout=layout)
 
     return fig
 
+
 def _plot_by_period(
     summary: pd.DataFrame,
-    currency: str=None,
-    height: int=None,
+    currency: str = None,
+    height: int = None,
 ) -> dict:
     """
     Helper function for :func:`plot`.
@@ -519,9 +523,7 @@ def _plot_by_period(
         currency = ""
 
     hovertemplate = (
-        "<b>%{meta}</b><br>"
-        "%{y:,.0f}" + currency + "<br>" +
-        "%{x}<extra></extra>"
+        "<b>%{meta}</b><br>" "%{y:,.0f}" + currency + "<br>" + "%{x}<extra></extra>"
     )
 
     f = summary["by_period"].copy()
@@ -549,7 +551,7 @@ def _plot_by_period(
             meta="cumulative balance",
             line_color="black",
             hovertemplate=hovertemplate,
-        )
+        ),
     ]
 
     layout = dict(
@@ -572,8 +574,8 @@ def _plot_by_period(
 
 def _plot_by_category_and_period(
     summary: pd.DataFrame,
-    currency: str=None,
-    height: int=None,
+    currency: str = None,
+    height: int = None,
 ) -> dict:
     """
     Helper function for :func:`plot`.
@@ -590,9 +592,7 @@ def _plot_by_category_and_period(
         currency = ""
 
     hovertemplate = (
-        "<b>%{meta}</b><br>"
-        "%{y:,.0f}" + currency + "<br>" +
-        "%{x}<extra></extra>"
+        "<b>%{meta}</b><br>" "%{y:,.0f}" + currency + "<br>" + "%{x}<extra></extra>"
     )
 
     # Make stacked bars for income and expense grouped by date
@@ -602,16 +602,18 @@ def _plot_by_category_and_period(
         pg.Bar(
             x=[
                 interleave(g.date, g.date),
-                ["income", "expense"]*n,
+                ["income", "expense"] * n,
             ],
             y=interleave(g.income, g.expense),
             name=category,
             meta=category,
             hovertemplate=hovertemplate,
-            text=pd.Series(interleave(
-                g.income_to_period_income_pc,
-                g.expense_to_period_expense_pc,
-            )).map(lambda x: f"{x:.0f}%"),
+            text=pd.Series(
+                interleave(
+                    g.income_to_period_income_pc,
+                    g.expense_to_period_expense_pc,
+                )
+            ).map(lambda x: f"{x:.0f}%"),
             textposition="inside",
         )
         for category, g in f1.groupby("category")
@@ -622,8 +624,10 @@ def _plot_by_category_and_period(
     f0["date"] = f0.date.map(lambda x: x.strftime("%Y-%m-%d"))
     traces.append(
         pg.Scatter(
-            x=[interleave(f0.date, f0.date), ["income", "expense"]*n],
-            y=interleave([np.nan for __ in f0.cumulative_balance], f0.cumulative_balance),
+            x=[interleave(f0.date, f0.date), ["income", "expense"] * n],
+            y=interleave(
+                [np.nan for __ in f0.cumulative_balance], f0.cumulative_balance
+            ),
             name="cumulative balance",
             meta="cumulative balance",
             line_color="black",
@@ -634,7 +638,7 @@ def _plot_by_category_and_period(
 
     # Set layout
     if n > 10:
-        width = 100*n
+        width = 100 * n
     else:
         width = None
 
@@ -649,13 +653,14 @@ def _plot_by_category_and_period(
         height=height,
         barmode="stack",
         uniformtext_minsize=8,
-        uniformtext_mode='hide',
+        uniformtext_mode="hide",
     )
     fig = pg.Figure(data=traces, layout=layout)
 
     return fig
 
-def plot(summary: pd.DataFrame, currency: str=None, height: int=None) -> dict:
+
+def plot(summary: pd.DataFrame, currency: str = None, height: int = None) -> dict:
     if summary["by_category"].empty:
         result = {
             "by_none": _plot_by_none(summary, currency, height),
@@ -664,6 +669,8 @@ def plot(summary: pd.DataFrame, currency: str=None, height: int=None) -> dict:
     else:
         result = {
             "by_category": _plot_by_category(summary, currency, height),
-            "by_category_and_period": _plot_by_category_and_period(summary, currency, height),
+            "by_category_and_period": _plot_by_category_and_period(
+                summary, currency, height
+            ),
         }
     return result

@@ -1,8 +1,12 @@
+data/other_feeds
+monkeytype.sqlite
 notebooks/prototyping.ipynb
-.pytest_cache/
 
 # Byte-compiled / optimized / DLL files
+.ruff_cache/
+.pytest_cache/
 __pycache__/
+.mypy_cache/
 *.py[cod]
 *$py.class
 
@@ -10,10 +14,10 @@ __pycache__/
 *.so
 
 # Distribution / packaging
+pip-wheel-metadata/
 .Python
 env/
 build/
-_build/
 develop-eggs/
 dist/
 downloads/
@@ -65,11 +69,14 @@ instance/
 # Scrapy stuff:
 .scrapy
 
+# Sphinx documentation
+docs/_build/
+
 # PyBuilder
 target/
 
 # Jupyter Notebook
-.ipynb_checkpoints
+notebooks/.ipynb_checkpoints
 
 # pyenv
 .python-version
@@ -90,6 +97,10 @@ ENV/
 
 # Spyder project settings
 .spyderproject
+.spyproject
 
 # Rope project settings
 .ropeproject
+
+# mkdocs documentation
+/site
