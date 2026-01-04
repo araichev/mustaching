@@ -1,29 +1,36 @@
-[tool.poetry]
+[project]
 name = "mustaching"
-version = "4.0.3"
-description = "A Python 3.9+ library inspired by Mr. Money Mustache to summarize and plot personal finance data given in a CSV file of transactions."
-authors = ["Alex Raichev <alex@raichev.net>"]
+version = "4.0.4"
+description = "A Python library inspired by Mr. Money Mustache to summarize and plot personal finance data given in a CSV file of transactions."
+authors = [
+    { name = "Alexander Raichev", email = "alexander@raichev.net" },
+]
 license = "MIT"
+requires-python = ">=3.12"
+dependencies = [
+    "pandas>=2",
+    "pandera>=0",
+    "plotly>=5",
+]
 
-[tool.poetry.dependencies]
-python = ">=3.9, <4"
-pandas = ">=1"
-pandera = ">=0"
-plotly = ">=5"
-
-[tool.poetry.dev-dependencies]
-jupyter = ">=1.0"
-pytest = ">=6"
-sphinx = ">=4"
-pre-commit = ">=2"
-black = ">=21"
-publish-sphinx-docs = ">=1"
+[dependency-groups]
+dev = [
+	"sphinx>=0",
+	"marimo>=0.17.6",
+	"ruff>=0.14.3",
+	"pytest>=9.0.2",
+	"pre-commit-uv>=4.2.0",
+]
 
 [build-system]
-requires = ["poetry>=1.0.0"]
-build-backend = "poetry.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.setuptools]
+packages = ["mustaching"]
+
 
 [tool.ruff]
 # Enable pycodestyle (`E`) and Pyflakes (`F`) codes by default.
-select = ["E", "F"]
-ignore = ["F403"]
+lint.select = ["E", "F"]
+lint.ignore = ["F401", "F403"]
