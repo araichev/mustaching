@@ -166,6 +166,18 @@ wheels = [
 ]
 
 [[package]]
+name = "ghp-import"
+version = "2.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "python-dateutil" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/d9/29/d40217cbe2f6b1359e00c6c307bb3fc876ba74068cbab3dde77f03ca0dc4/ghp-import-2.1.0.tar.gz", hash = "sha256:9c535c4c61193c2df8871222567d7fd7e5014d835f97dc7b7439069e2413d343", size = 10943, upload-time = "2022-05-02T15:47:16.11Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f7/ec/67fbef5d497f86283db54c22eec6f6140243aae73265799baaaa19cd17fb/ghp_import-2.1.0-py3-none-any.whl", hash = "sha256:8337dd7b50877f163d4c0289bc1f1c7f127550241988d568c1db512c4324a619", size = 11034, upload-time = "2022-05-02T15:47:14.552Z" },
+]
+
+[[package]]
 name = "h11"
 version = "0.16.0"
 source = { registry = "https://pypi.org/simple" }
@@ -451,7 +463,7 @@ wheels = [
 
 [[package]]
 name = "mustaching"
-version = "4.0.3"
+version = "4.0.4"
 source = { editable = "." }
 dependencies = [
     { name = "pandas" },
@@ -463,6 +475,7 @@ dependencies = [
 dev = [
     { name = "marimo" },
     { name = "pre-commit-uv" },
+    { name = "publish-sphinx-docs" },
     { name = "pytest" },
     { name = "ruff" },
     { name = "sphinx" },
@@ -479,6 +492,7 @@ requires-dist = [
 dev = [
     { name = "marimo", specifier = ">=0.17.6" },
     { name = "pre-commit-uv", specifier = ">=4.2.0" },
+    { name = "publish-sphinx-docs", specifier = ">=1.1.0" },
     { name = "pytest", specifier = ">=9.0.2" },
     { name = "ruff", specifier = ">=0.14.3" },
     { name = "sphinx", specifier = ">=0" },
@@ -739,6 +753,19 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/1c/15/dd6fd869753ce82ff64dcbc18356093471a5a5adf4f77ed1f805d473d859/psutil-7.2.1-cp36-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:99a4cd17a5fdd1f3d014396502daa70b5ec21bf4ffe38393e152f8e449757d67", size = 147402, upload-time = "2025-12-29T08:26:39.21Z" },
     { url = "https://files.pythonhosted.org/packages/34/68/d9317542e3f2b180c4306e3f45d3c922d7e86d8ce39f941bb9e2e9d8599e/psutil-7.2.1-cp37-abi3-win_amd64.whl", hash = "sha256:b1b0671619343aa71c20ff9767eced0483e4fc9e1f489d50923738caf6a03c17", size = 136938, upload-time = "2025-12-29T08:26:41.036Z" },
     { url = "https://files.pythonhosted.org/packages/3e/73/2ce007f4198c80fcf2cb24c169884f833fe93fbc03d55d302627b094ee91/psutil-7.2.1-cp37-abi3-win_arm64.whl", hash = "sha256:0d67c1822c355aa6f7314d92018fb4268a76668a536f133599b91edd48759442", size = 133836, upload-time = "2025-12-29T08:26:43.086Z" },
+]
+
+[[package]]
+name = "publish-sphinx-docs"
+version = "1.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "click" },
+    { name = "ghp-import" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/48/b4/07e5d2e96e7603a1c41f9a61ff20961e960b8d027d20c465bb02aedc6218/publish_sphinx_docs-1.1.0.tar.gz", hash = "sha256:16d6a8dbcbfe63483ed2e0a68754e108d915a0a2e484ebcaff3fa6c8384a0d7b", size = 33875, upload-time = "2025-11-05T23:44:43.829Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/41/e7/aeba0a10a3d086371a08fdec6be8aa8ef2ae957e7185bbb493ba904d6aad/publish_sphinx_docs-1.1.0-py3-none-any.whl", hash = "sha256:db0fdf69f2f8adfe9c88d536c2cd9f946b702a3c468044a45a0746c29c83fad0", size = 2909, upload-time = "2025-11-05T23:44:42.779Z" },
 ]
 
 [[package]]

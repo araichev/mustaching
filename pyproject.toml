@@ -20,6 +20,7 @@ dev = [
 	"ruff>=0.14.3",
 	"pytest>=9.0.2",
 	"pre-commit-uv>=4.2.0",
+	"publish-sphinx-docs>=1.1.0",
 ]
 
 [build-system]
