@@ -1,17 +1,17 @@
-import random
 import itertools as it
-
-import pandas as pd
-import pandera as pa
-import numpy as np
-import plotly.graph_objects as pg
+import random
 import textwrap as tw
+
+import numpy as np
+import pandas as pd
+import pandera.pandas as pa
+import plotly.graph_objects as pg
 
 
 def create_transactions(
     date1: str,
     date2: str,
-    freq: str = "12H",
+    freq: str = "12h",
     income_categories: list[str] = None,
     expense_categories: list[str] = None,
 ) -> pd.DataFrame:
@@ -418,7 +418,7 @@ def _plot_by_none(
     if currency is None:
         currency = ""
 
-    hovertemplate = "<b>%{meta}</b><br>" "%{y:,.0f}" + currency + "<br><extra></extra>"
+    hovertemplate = "<b>%{meta}</b><br>%{y:,.0f}" + currency + "<br><extra></extra>"
 
     # Make bars for income and expense
     traces = [
@@ -472,7 +472,7 @@ def _plot_by_category(
         currency = ""
 
     hovertemplate = (
-        "<b>%{meta}</b><br>" "%{y:,.0f}" + currency + "<br>" + "%{x}<extra></extra>"
+        "<b>%{meta}</b><br>%{y:,.0f}" + currency + "<br>" + "%{x}<extra></extra>"
     )
 
     # Make stacked bars for income and expense
@@ -523,7 +523,7 @@ def _plot_by_period(
         currency = ""
 
     hovertemplate = (
-        "<b>%{meta}</b><br>" "%{y:,.0f}" + currency + "<br>" + "%{x}<extra></extra>"
+        "<b>%{meta}</b><br>%{y:,.0f}" + currency + "<br>" + "%{x}<extra></extra>"
     )
 
     f = summary["by_period"].copy()
@@ -592,7 +592,7 @@ def _plot_by_category_and_period(
         currency = ""
 
     hovertemplate = (
-        "<b>%{meta}</b><br>" "%{y:,.0f}" + currency + "<br>" + "%{x}<extra></extra>"
+        "<b>%{meta}</b><br>%{y:,.0f}" + currency + "<br>" + "%{x}<extra></extra>"
     )
 
     # Make stacked bars for income and expense grouped by date
