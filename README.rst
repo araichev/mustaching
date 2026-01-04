@@ -42,6 +42,7 @@ Notes
 - Development status: Alpha
 - This project uses semantic versioning
 
+Note to the maintainer: To update the docs do ``uv run publish-sphinx-docs``, then enter the docs remote ``git@github.com:mrcagney/mustaching_docs``.
 
 Authors
 ========
