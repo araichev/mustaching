@@ -52,6 +52,12 @@ Authors
 Changes
 ========
 
+4.0.5, 2026-04-06
+-----------------
+- Fixed category/period plot date ordering.
+- Fixed end-of-period labels for frequencies like `ME`.
+
+
 4.0.4, 2026-01-04
 -----------------
 - Switched to UV for project management.
