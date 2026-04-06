@@ -295,7 +295,7 @@ def summarize(
     total = result["by_none"].to_dict("records")[0]
 
     # By period
-    period = pd.Grouper(freq=freq, label="left", closed="left")
+    period = pd.Grouper(freq=freq)
     result["by_period"] = (
         f.set_index("date")
         .groupby(period)
@@ -585,9 +585,6 @@ def _plot_by_category_and_period(
     if summary["by_category"].empty:
         return pg.Figure()
 
-    f1 = summary["by_category_and_period"].copy()
-    f0 = summary["by_period"].copy()
-
     if currency is None:
         currency = ""
 
@@ -595,38 +592,74 @@ def _plot_by_category_and_period(
         "<b>%{meta}</b><br>%{y:,.0f}" + currency + "<br>" + "%{x}<extra></extra>"
     )
 
-    # Make stacked bars for income and expense grouped by date
-    f1["date"] = f1.date.map(lambda x: x.strftime("%Y-%m-%d"))
-    n = f1.date.nunique()
-    traces = [
-        pg.Bar(
-            x=[
-                interleave(g.date, g.date),
-                ["income", "expense"] * n,
-            ],
-            y=interleave(g.income, g.expense),
-            name=category,
-            meta=category,
-            hovertemplate=hovertemplate,
-            text=pd.Series(
-                interleave(
-                    g.income_to_period_income_pc,
-                    g.expense_to_period_expense_pc,
-                )
-            ).map(lambda x: f"{x:.0f}%"),
-            textposition="inside",
+    # Base tables
+    f1 = summary["by_category_and_period"].copy()
+    f0 = summary["by_period"].copy().sort_values("date")
+
+    # Force a complete date × category grid so every trace has the same x-axis
+    period_order = pd.Index(f0["date"].drop_duplicates().sort_values(), name="date")
+    category_order = pd.Index(
+        summary["by_category"]["category"].astype(str).tolist(),
+        name="category",
+    )
+
+    f1 = f1.copy()
+    f1["category"] = f1["category"].astype(str)
+
+    full_index = pd.MultiIndex.from_product(
+        [period_order, category_order],
+        names=["date", "category"],
+    )
+
+    f1 = (
+        f1.set_index(["date", "category"])
+        .reindex(full_index, fill_value=0)
+        .reset_index()
+        .sort_values(["date", "category"])
+    )
+
+    # String labels for the multicategory x-axis
+    date_labels = [d.strftime("%Y-%m-%d") for d in period_order]
+    n = len(date_labels)
+
+    traces = []
+    for category in category_order:
+        g = (
+            f1.loc[f1["category"] == category]
+            .sort_values("date")
+            .reset_index(drop=True)
         )
-        for category, g in f1.groupby("category")
-    ]
-    # Make line plot of cumulative balance;
-    # hack it to match the x-axis of the stacked bars
-    f0 = summary["by_period"].copy()
-    f0["date"] = f0.date.map(lambda x: x.strftime("%Y-%m-%d"))
+
+        traces.append(
+            pg.Bar(
+                x=[
+                    interleave(date_labels, date_labels),
+                    ["income", "expense"] * n,
+                ],
+                y=interleave(g["income"].tolist(), g["expense"].tolist()),
+                name=category,
+                meta=category,
+                hovertemplate=hovertemplate,
+                text=pd.Series(
+                    interleave(
+                        g["income_to_period_income_pc"].tolist(),
+                        g["expense_to_period_expense_pc"].tolist(),
+                    )
+                ).map(lambda x: f"{x:.0f}%" if pd.notna(x) else ""),
+                textposition="inside",
+            )
+        )
+
+    # Cumulative balance line aligned to the same x-axis
     traces.append(
         pg.Scatter(
-            x=[interleave(f0.date, f0.date), ["income", "expense"] * n],
+            x=[
+                interleave(date_labels, date_labels),
+                ["income", "expense"] * n,
+            ],
             y=interleave(
-                [np.nan for __ in f0.cumulative_balance], f0.cumulative_balance
+                [np.nan] * n,
+                f0["cumulative_balance"].tolist(),
             ),
             name="cumulative balance",
             meta="cumulative balance",
@@ -636,11 +669,7 @@ def _plot_by_category_and_period(
         )
     )
 
-    # Set layout
-    if n > 10:
-        width = 100 * n
-    else:
-        width = None
+    width = 100 * n if n > 10 else None
 
     layout = dict(
         title=make_title(summary, "Summary by category and period", currency),
@@ -655,9 +684,8 @@ def _plot_by_category_and_period(
         uniformtext_minsize=8,
         uniformtext_mode="hide",
     )
-    fig = pg.Figure(data=traces, layout=layout)
 
-    return fig
+    return pg.Figure(data=traces, layout=layout)
 
 
 def plot(summary: pd.DataFrame, currency: str = None, height: int = None) -> dict:
